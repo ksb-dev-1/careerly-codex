@@ -15,6 +15,13 @@
       "when": 1788775599147,
       "tag": "0001_minor_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788852052648,
+      "tag": "0002_whole_blade",
+      "breakpoints": true
     }
   ]
 }
