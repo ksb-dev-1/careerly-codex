@@ -37,17 +37,12 @@ export default async function HomePage() {
     <>
       <main>
         <section className="border-b border-border bg-background text-foreground">
-          <div className="relative mx-auto grid max-w-6xl gap-16 px-6 py-20 lg:min-h-[680px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-20 lg:py-24">
+          <div className="relative mx-auto grid max-w-6xl gap-16 px-6 py-20 lg:min-h-170 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-20 lg:py-24">
             <div className="max-w-2xl">
-              <p className="inline-flex items-center gap-3 text-xs font-semibold tracking-[0.18em] text-emerald-800 uppercase dark:text-emerald-300">
-                <span className="size-2 rounded-full bg-emerald-500" />
-                The place for your next move
-              </p>
-
               <h1 className="mt-7 text-[clamp(3.25rem,6vw,5.75rem)] leading-[1.02] font-semibold tracking-[-0.055em]">
                 Better careers.
                 <br />
-                <span className="text-emerald-700 dark:text-emerald-400">
+                <span className="text-brand-700 dark:text-brand-400">
                   Stronger teams.
                 </span>
               </h1>
@@ -60,7 +55,7 @@ export default async function HomePage() {
               <Button
                 asChild
                 size="lg"
-                className="mt-9 h-12 rounded-full bg-emerald-800 px-7 text-base text-white shadow-lg shadow-emerald-900/10 hover:bg-emerald-900 dark:bg-emerald-400 dark:text-slate-950 dark:hover:bg-emerald-300"
+                className="mt-9 h-12 rounded-full bg-brand-800 px-7 text-base text-white shadow-lg shadow-brand-900/10 hover:bg-brand-900 dark:bg-brand-400 dark:text-slate-950 dark:hover:bg-brand-300"
               >
                 <Link href={destination.href}>
                   {session ? destination.label : "Get started"}
@@ -75,18 +70,18 @@ export default async function HomePage() {
 
             <aside
               aria-label="Careerly for job seekers and employers"
-              className="relative mx-auto w-full max-w-[500px] min-w-0"
+              className="relative mx-auto w-full max-w-125 min-w-0"
             >
-              <div className="absolute inset-0 rotate-[-4deg] rounded-[2rem] border border-border bg-muted" />
-              <div className="relative overflow-hidden rounded-[2rem] border border-border bg-card p-6 text-card-foreground shadow-xl shadow-foreground/5 sm:p-8">
+              <div className="absolute inset-0 rotate-[-4deg] rounded-[2rem] border border-brand-700/20 bg-brand-100/80 dark:border-brand-400/20 dark:bg-brand-400/10" />
+              <div className="relative overflow-hidden rounded-[2rem] border border-brand-700/15 bg-card p-6 text-card-foreground shadow-xl shadow-foreground/5 dark:border-brand-400/20 sm:p-8">
                 <div className="flex items-center justify-between border-b border-border pb-5">
-                  <p className="text-sm font-bold tracking-[0.18em] text-primary uppercase">
+                  <p className="font-bold text-brand-700 dark:text-brand-400">
                     Careerly
                   </p>
-                  <span className="size-2 rounded-full bg-primary" />
+                  <span className="size-2 rounded-full bg-brand-500" />
                 </div>
 
-                <p className="mt-9 text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+                <p className="mt-9 text-xs font-bold tracking-widest text-brand-700 uppercase dark:text-brand-400">
                   A better connection starts here
                 </p>
                 <h2 className="mt-3 max-w-sm text-3xl leading-tight font-semibold tracking-tight sm:text-4xl">
@@ -94,17 +89,20 @@ export default async function HomePage() {
                 </h2>
 
                 <div className="mt-9 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl bg-primary p-5 text-primary-foreground">
+                  <div className="rounded-2xl bg-brand-700 p-5 text-white dark:bg-brand-400 dark:text-slate-950">
                     <BriefcaseBusiness aria-hidden="true" className="size-6" />
                     <p className="mt-6 font-semibold">Find your fit</p>
-                    <p className="mt-2 text-sm leading-6 text-primary-foreground/75">
+                    <p className="mt-2 text-sm leading-6 text-white/80 dark:text-slate-950/75">
                       Explore a new direction for your career.
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-muted p-5 text-foreground">
-                    <UsersRound aria-hidden="true" className="size-6" />
+                  <div className="rounded-2xl bg-brand-50 p-5 text-brand-950 dark:bg-brand-400/10 dark:text-brand-100">
+                    <UsersRound
+                      aria-hidden="true"
+                      className="size-6 text-brand-700 dark:text-brand-300"
+                    />
                     <p className="mt-6 font-semibold">Grow your team</p>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-2 text-sm leading-6 text-brand-950/70 dark:text-brand-100/70">
                       Meet people ready to make an impact.
                     </p>
                   </div>
@@ -119,7 +117,8 @@ export default async function HomePage() {
         >
           <div className="mx-auto max-w-6xl px-6">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+              <p className="inline-flex items-center gap-3 text-xs font-bold tracking-widest text-brand-800 uppercase dark:text-brand-300">
+                <span className="size-2 rounded-full bg-brand-500" />
                 Made for both sides
               </p>
               <h2
@@ -136,10 +135,10 @@ export default async function HomePage() {
 
             <div className="mt-10 grid gap-5 md:grid-cols-2">
               <article className="rounded-3xl border border-border bg-card p-8 text-card-foreground shadow-sm">
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-brand-700 text-white dark:bg-brand-400 dark:text-slate-950">
                   <BriefcaseBusiness aria-hidden="true" className="size-6" />
                 </div>
-                <p className="mt-8 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                <p className="mt-8 text-sm font-semibold tracking-wide text-brand-700 uppercase dark:text-brand-400">
                   For job seekers
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold tracking-tight">
@@ -152,10 +151,10 @@ export default async function HomePage() {
               </article>
 
               <article className="rounded-3xl border border-border bg-card p-8 text-card-foreground shadow-sm">
-                <div className="flex size-12 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 dark:bg-brand-400/10 dark:text-brand-300">
                   <UsersRound aria-hidden="true" className="size-6" />
                 </div>
-                <p className="mt-8 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                <p className="mt-8 text-sm font-semibold tracking-wide text-brand-700 uppercase dark:text-brand-400">
                   For employers
                 </p>
                 <h3 className="mt-3 text-2xl font-semibold tracking-tight">
@@ -176,8 +175,9 @@ export default async function HomePage() {
         >
           <div className="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div className="max-w-md">
-              <p className="text-sm font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                How Careerly works
+              <p className="inline-flex items-center gap-3 text-xs font-bold tracking-widest text-brand-800 uppercase dark:text-brand-300">
+                <span className="size-2 rounded-full bg-brand-500" />
+                How Careerly Works
               </p>
               <h2
                 id="how-it-works-title"
@@ -193,7 +193,7 @@ export default async function HomePage() {
 
             <ol className="border-t border-border">
               <li className="flex gap-6 border-b border-border py-7">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-brand-700/20 bg-brand-50 text-sm font-semibold text-brand-800 dark:border-brand-400/30 dark:bg-brand-400/10 dark:text-brand-300">
                   01
                 </span>
                 <div>
@@ -207,7 +207,7 @@ export default async function HomePage() {
                 </div>
               </li>
               <li className="flex gap-6 border-b border-border py-7">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-brand-700/20 bg-brand-50 text-sm font-semibold text-brand-800 dark:border-brand-400/30 dark:bg-brand-400/10 dark:text-brand-300">
                   02
                 </span>
                 <div>
@@ -221,7 +221,7 @@ export default async function HomePage() {
                 </div>
               </li>
               <li className="flex gap-6 py-7">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-background text-sm font-semibold">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full border border-brand-700/20 bg-brand-50 text-sm font-semibold text-brand-800 dark:border-brand-400/30 dark:bg-brand-400/10 dark:text-brand-300">
                   03
                 </span>
                 <div>
@@ -244,7 +244,8 @@ export default async function HomePage() {
         >
           <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div className="max-w-md">
-              <p className="text-sm font-semibold tracking-[0.16em] text-muted-foreground uppercase">
+              <p className="inline-flex items-center gap-3 text-xs font-bold tracking-widest text-brand-800 uppercase dark:text-brand-300">
+                <span className="size-2 rounded-full bg-brand-500" />
                 Frequently asked questions
               </p>
               <h2
@@ -260,26 +261,26 @@ export default async function HomePage() {
             </div>
 
             <div className="space-y-3">
-              <details className="group rounded-2xl border border-border bg-card text-card-foreground">
+              <details className="group rounded-2xl border border-border bg-card text-card-foreground open:border-brand-700/30 dark:open:border-brand-400/30">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold [&::-webkit-details-marker]:hidden">
                   How do I get started?
                   <ChevronDown
                     aria-hidden="true"
-                    className="size-5 shrink-0 transition-transform group-open:rotate-180"
+                    className="size-5 shrink-0 text-brand-700 transition-transform group-open:rotate-180 dark:text-brand-400"
                   />
                 </summary>
                 <p className="px-5 pb-5 leading-7 text-muted-foreground">
-                  Sign in with Google or GitHub, choose whether you&apos;re a job
-                  seeker or employer, and complete your profile.
+                  Sign in with Google or GitHub, choose whether you&apos;re a
+                  job seeker or employer, and complete your profile.
                 </p>
               </details>
 
-              <details className="group rounded-2xl border border-border bg-card text-card-foreground">
+              <details className="group rounded-2xl border border-border bg-card text-card-foreground open:border-brand-700/30 dark:open:border-brand-400/30">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold [&::-webkit-details-marker]:hidden">
                   Can employers manage their job posts?
                   <ChevronDown
                     aria-hidden="true"
-                    className="size-5 shrink-0 transition-transform group-open:rotate-180"
+                    className="size-5 shrink-0 text-brand-700 transition-transform group-open:rotate-180 dark:text-brand-400"
                   />
                 </summary>
                 <p className="px-5 pb-5 leading-7 text-muted-foreground">
@@ -288,12 +289,12 @@ export default async function HomePage() {
                 </p>
               </details>
 
-              <details className="group rounded-2xl border border-border bg-card text-card-foreground">
+              <details className="group rounded-2xl border border-border bg-card text-card-foreground open:border-brand-700/30 dark:open:border-brand-400/30">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold [&::-webkit-details-marker]:hidden">
                   How many jobs can I apply to each day?
                   <ChevronDown
                     aria-hidden="true"
-                    className="size-5 shrink-0 transition-transform group-open:rotate-180"
+                    className="size-5 shrink-0 text-brand-700 transition-transform group-open:rotate-180 dark:text-brand-400"
                   />
                 </summary>
                 <p className="px-5 pb-5 leading-7 text-muted-foreground">
@@ -302,17 +303,18 @@ export default async function HomePage() {
                 </p>
               </details>
 
-              <details className="group rounded-2xl border border-border bg-card text-card-foreground">
+              <details className="group rounded-2xl border border-border bg-card text-card-foreground open:border-brand-700/30 dark:open:border-brand-400/30">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold [&::-webkit-details-marker]:hidden">
                   Is Premium available now?
                   <ChevronDown
                     aria-hidden="true"
-                    className="size-5 shrink-0 transition-transform group-open:rotate-180"
+                    className="size-5 shrink-0 text-brand-700 transition-transform group-open:rotate-180 dark:text-brand-400"
                   />
                 </summary>
                 <p className="px-5 pb-5 leading-7 text-muted-foreground">
-                  Not yet. We haven&apos;t set a price or enabled Stripe checkout.
-                  We&apos;ll update the Pricing page when memberships launch.
+                  Not yet. We haven&apos;t set a price or enabled Stripe
+                  checkout. We&apos;ll update the Pricing page when memberships
+                  launch.
                 </p>
               </details>
             </div>
