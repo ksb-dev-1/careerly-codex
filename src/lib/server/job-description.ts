@@ -26,3 +26,13 @@ export function sanitizeJobDescription(html: string) {
     allowedAttributes: {},
   });
 }
+
+export function getVisibleJobDescriptionLength(html: string) {
+  const text = sanitizeHtml(sanitizeJobDescription(html), {
+    allowedTags: [],
+    allowedAttributes: {},
+  });
+
+  return text.replace(/&(?:#\d+|#x[\da-f]+|[a-z][a-z0-9]+);/gi, "x").trim()
+    .length;
+}

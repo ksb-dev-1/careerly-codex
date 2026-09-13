@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { createJob } from "@/actions/create-job";
+import { updateJob } from "@/actions/update-job";
 import { JobDescriptionEditor } from "@/components/employer/job-description-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +52,13 @@ function formatDateInput(date: Date | null | undefined) {
   return `${year}-${month}-${day}`;
 }
 
-export function JobForm({ initialJob }: { initialJob?: JobInput }) {
+export function JobForm({
+  initialJob,
+  jobId,
+}: {
+  initialJob?: JobInput;
+  jobId?: string;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [description, setDescription] = useState(initialJob?.description ?? "");
   const [isPending, startTransition] = useTransition();
@@ -92,7 +99,9 @@ export function JobForm({ initialJob }: { initialJob?: JobInput }) {
 
     startTransition(async () => {
       try {
-        const result = await createJob(input);
+        const result = jobId
+          ? await updateJob(jobId, input)
+          : await createJob(input);
 
         if (!result.success) {
           const firstFieldError = Object.values(result.fieldErrors)
@@ -103,12 +112,12 @@ export function JobForm({ initialJob }: { initialJob?: JobInput }) {
           return;
         }
 
-        router.push("/employer/jobs");
+        router.push(jobId ? `/employer/jobs/${jobId}` : "/employer/jobs");
       } catch (error) {
         setError(
           error instanceof Error
             ? error.message
-            : "Unable to create the job. Please try again.",
+            : "Unable to save the job. Please try again.",
         );
       }
     });
@@ -291,7 +300,7 @@ export function JobForm({ initialJob }: { initialJob?: JobInput }) {
       ) : null}
 
       <Button disabled={isPending} type="submit">
-        {isPending ? "Creating draft..." : "Create draft"}
+        {isPending ? "Saving..." : jobId ? "Save changes" : "Create draft"}
       </Button>
     </form>
   );

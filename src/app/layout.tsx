@@ -1,13 +1,14 @@
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Mulish } from "next/font/google";
 
 import type { Metadata } from "next";
 
+import { MarketingHeader } from "@/components/layout/marketing-header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const font = Mulish({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         geistSans.variable,
         geistMono.variable,
         "font-sans",
-        inter.variable,
+        font.variable,
       )}
     >
       <body className="min-h-full flex flex-col">
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           disableTransitionOnChange
         >
+          <MarketingHeader />
           {children}
         </ThemeProvider>
       </body>

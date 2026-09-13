@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -115,6 +116,12 @@ export const jobSeekerProfile = pgTable("job_seeker_profile", {
 });
 
 export const jobStatus = pgEnum("job_status", ["DRAFT", "PUBLISHED", "CLOSED"]);
+export const applicationStatus = pgEnum("application_status", [
+  "SUBMITTED",
+  "SHORTLISTED",
+  "REJECTED",
+  "WITHDRAWN",
+]);
 
 export const employmentType = pgEnum("employment_type", [
   "FULL_TIME",
@@ -173,10 +180,46 @@ export const job = pgTable(
   ],
 );
 
+export const application = pgTable(
+  "application",
+  {
+    id: text("id").primaryKey(),
+    jobId: text("job_id")
+      .notNull()
+      .references(() => job.id, { onDelete: "cascade" }),
+    jobSeekerId: text("job_seeker_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: applicationStatus("status").default("SUBMITTED").notNull(),
+    coverLetter: text("cover_letter"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("application_job_seeker_unique").on(
+      table.jobId,
+      table.jobSeekerId,
+    ),
+    index("application_job_status_created_at_idx").on(
+      table.jobId,
+      table.status,
+      table.createdAt,
+    ),
+    index("application_seeker_created_at_idx").on(
+      table.jobSeekerId,
+      table.createdAt,
+    ),
+  ],
+);
+
 export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
   jobs: many(job),
+  applications: many(application),
   employerProfile: one(employerProfile),
   jobSeekerProfile: one(jobSeekerProfile),
 }));
@@ -215,9 +258,21 @@ export const jobSeekerProfileRelations = relations(
   }),
 );
 
-export const jobRelations = relations(job, ({ one }) => ({
+export const jobRelations = relations(job, ({ one, many }) => ({
   employer: one(user, {
     fields: [job.employerId],
+    references: [user.id],
+  }),
+  applications: many(application),
+}));
+
+export const applicationRelations = relations(application, ({ one }) => ({
+  job: one(job, {
+    fields: [application.jobId],
+    references: [job.id],
+  }),
+  jobSeeker: one(user, {
+    fields: [application.jobSeekerId],
     references: [user.id],
   }),
 }));

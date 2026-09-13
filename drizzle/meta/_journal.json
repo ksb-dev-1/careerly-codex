@@ -22,6 +22,13 @@
       "when": 1788852052648,
       "tag": "0002_whole_blade",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789289092172,
+      "tag": "0003_serious_wendigo",
+      "breakpoints": true
     }
   ]
 }

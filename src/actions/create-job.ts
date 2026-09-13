@@ -8,7 +8,10 @@ import { z } from "zod";
 import { db } from "@/db";
 import { employerProfile, job } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { sanitizeJobDescription } from "@/lib/server/job-description";
+import {
+  getVisibleJobDescriptionLength,
+  sanitizeJobDescription,
+} from "@/lib/server/job-description";
 import { type JobInput, jobInputSchema } from "@/lib/validations/job";
 
 export async function createJob(input: JobInput) {
@@ -31,6 +34,16 @@ export async function createJob(input: JobInput) {
       success: false as const,
       message: "Please correct the invalid job details.",
       fieldErrors: z.flattenError(validation.error).fieldErrors,
+    };
+  }
+
+  if (getVisibleJobDescriptionLength(validation.data.description) < 50) {
+    const message = "Description must contain at least 50 visible characters.";
+
+    return {
+      success: false as const,
+      message,
+      fieldErrors: { description: [message] },
     };
   }
 

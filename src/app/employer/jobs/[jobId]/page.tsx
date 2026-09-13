@@ -55,6 +55,14 @@ export default async function EmployerJobDetailsPage({
         {listing.status === "PUBLISHED" ? (
           <CloseJobButton jobId={listing.id} />
         ) : null}
+        {listing.status !== "CLOSED" ? (
+          <Link
+            className="inline-block text-sm underline"
+            href={`/employer/jobs/${listing.id}/edit`}
+          >
+            Edit job
+          </Link>
+        ) : null}
       </div>
 
       <section className="space-y-3">
