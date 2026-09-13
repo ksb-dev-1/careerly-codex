@@ -3,7 +3,13 @@ import Link from "next/link";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 
-export function MarketingHeader() {
+export function MarketingHeader({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
   return (
     <header className="border-b">
       <nav
@@ -16,8 +22,8 @@ export function MarketingHeader() {
 
         <div className="flex items-center gap-2">
           <ModeToggle />
-          <Button asChild size="sm" variant="outline">
-            <Link href="/sign-in">Sign in</Link>
+          <Button asChild variant="outline">
+            <Link href={href}>{label}</Link>
           </Button>
         </div>
       </nav>

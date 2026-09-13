@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { employerProfile, job } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { sanitizeJobDescription } from "@/lib/server/job-description";
 import { type JobInput, jobInputSchema } from "@/lib/validations/job";
 
 export async function createJob(input: JobInput) {
@@ -52,7 +53,7 @@ export async function createJob(input: JobInput) {
       id: crypto.randomUUID(),
       employerId: session.user.id,
       title: inputData.title,
-      description: inputData.description,
+      description: sanitizeJobDescription(inputData.description),
       location: inputData.location || null,
       employmentType: inputData.employmentType,
       workplaceType: inputData.workplaceType,

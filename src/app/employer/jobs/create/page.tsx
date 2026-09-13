@@ -4,11 +4,10 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
+import { JobForm } from "@/components/employer/job-form";
 import { db } from "@/db";
 import { employerProfile } from "@/db/schema";
 import { auth } from "@/lib/auth";
-
-import { CreateJobForm } from "./create-job-form";
 
 export const metadata: Metadata = {
   title: "Create a job | Careerly",
@@ -49,7 +48,7 @@ export default async function CreateJobPage() {
       </div>
 
       <div className="mt-8">
-        <CreateJobForm />
+        <JobForm />
       </div>
     </main>
   );

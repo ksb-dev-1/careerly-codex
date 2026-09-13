@@ -60,7 +60,14 @@ export default async function EmployerJobsPage() {
             <li className="rounded-lg border p-5" key={job.id}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-2">
-                  <h2 className="font-semibold">{job.title}</h2>
+                  <h2 className="font-semibold">
+                    <Link
+                      className="underline-offset-4 hover:underline"
+                      href={`/employer/jobs/${job.id}`}
+                    >
+                      {job.title}
+                    </Link>
+                  </h2>
                   <p className="text-sm text-muted-foreground">
                     {job.workplaceType.replaceAll("_", " ").toLowerCase()}
                     {job.location ? ` · ${job.location}` : ""}

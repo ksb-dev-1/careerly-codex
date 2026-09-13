@@ -1,9 +1,11 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 
 import type { Metadata } from "next";
 
 import { MarketingHeader } from "@/components/layout/marketing-header";
 import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Careerly | Find your next opportunity",
@@ -11,10 +13,23 @@ export const metadata: Metadata = {
     "Careerly connects job seekers with meaningful opportunities and employers with great talent.",
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const destination =
+    session?.user.role === "EMPLOYER"
+      ? { href: "/employer/jobs", label: "Your jobs" }
+      : session?.user.role === "JOB_SEEKER"
+        ? { href: "/job-seeker/profile/edit", label: "Your profile" }
+        : session
+          ? { href: "/select-user-role", label: "Choose role" }
+          : { href: "/sign-in", label: "Sign in" };
+
   return (
     <main>
-      <MarketingHeader />
+      <MarketingHeader href={destination.href} label={destination.label} />
       <section className="flex min-h-[calc(100vh-1px)] items-center justify-center px-6 py-24">
         <div className="max-w-3xl space-y-8 text-center">
           <p className="text-sm font-semibold tracking-wide text-primary uppercase">
@@ -32,7 +47,7 @@ export default function HomePage() {
 
           <div className="flex justify-center">
             <Button asChild size="lg">
-              <Link href="/sign-in">Start exploring</Link>
+              <Link href={destination.href}>Start exploring</Link>
             </Button>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { createJob } from "@/actions/create-job";
+import { JobDescriptionEditor } from "@/components/employer/job-description-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import {
   CURRENCIES,
   EMPLOYMENT_TYPES,
@@ -41,8 +41,19 @@ function formatOption(value: string) {
   return value.replaceAll("_", " ").toLowerCase();
 }
 
-export function CreateJobForm() {
+function formatDateInput(date: Date | null | undefined) {
+  if (!date) return undefined;
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+export function JobForm({ initialJob }: { initialJob?: JobInput }) {
   const [error, setError] = useState<string | null>(null);
+  const [description, setDescription] = useState(initialJob?.description ?? "");
   const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
@@ -55,7 +66,7 @@ export function CreateJobForm() {
 
     const input: JobInput = {
       title: getString(formData, "title"),
-      description: getString(formData, "description"),
+      description,
       location: getString(formData, "location"),
       employmentType: getString(
         formData,
@@ -113,20 +124,16 @@ export function CreateJobForm() {
           minLength={3}
           name="title"
           placeholder="Senior frontend developer"
+          defaultValue={initialJob?.title}
           required
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          maxLength={10_000}
-          minLength={50}
-          name="description"
-          placeholder="Describe the role, responsibilities, and requirements."
-          required
-          rows={10}
+        <JobDescriptionEditor
+          initialContent={initialJob?.description ?? ""}
+          onChange={setDescription}
         />
       </div>
 
@@ -137,13 +144,17 @@ export function CreateJobForm() {
           maxLength={120}
           name="location"
           placeholder="Bengaluru, India"
+          defaultValue={initialJob?.location}
         />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="employmentType">Employment type</Label>
-          <Select defaultValue="FULL_TIME" name="employmentType">
+          <Select
+            defaultValue={initialJob?.employmentType ?? "FULL_TIME"}
+            name="employmentType"
+          >
             <SelectTrigger className="w-full" id="employmentType">
               <SelectValue />
             </SelectTrigger>
@@ -159,7 +170,10 @@ export function CreateJobForm() {
 
         <div className="space-y-2">
           <Label htmlFor="workplaceType">Workplace type</Label>
-          <Select defaultValue="ONSITE" name="workplaceType">
+          <Select
+            defaultValue={initialJob?.workplaceType ?? "ONSITE"}
+            name="workplaceType"
+          >
             <SelectTrigger className="w-full" id="workplaceType">
               <SelectValue />
             </SelectTrigger>
@@ -175,7 +189,10 @@ export function CreateJobForm() {
 
         <div className="space-y-2">
           <Label htmlFor="experienceLevel">Experience level</Label>
-          <Select defaultValue="ENTRY" name="experienceLevel">
+          <Select
+            defaultValue={initialJob?.experienceLevel ?? "ENTRY"}
+            name="experienceLevel"
+          >
             <SelectTrigger className="w-full" id="experienceLevel">
               <SelectValue />
             </SelectTrigger>
@@ -191,7 +208,7 @@ export function CreateJobForm() {
 
         <div className="space-y-2">
           <Label htmlFor="currency">Currency</Label>
-          <Select defaultValue="INR" name="currency">
+          <Select defaultValue={initialJob?.currency ?? "INR"} name="currency">
             <SelectTrigger className="w-full" id="currency">
               <SelectValue />
             </SelectTrigger>
@@ -214,6 +231,7 @@ export function CreateJobForm() {
             min={0}
             name="minimumSalary"
             type="number"
+            defaultValue={initialJob?.minimumSalary ?? ""}
           />
         </div>
 
@@ -224,6 +242,7 @@ export function CreateJobForm() {
             min={0}
             name="maximumSalary"
             type="number"
+            defaultValue={initialJob?.maximumSalary ?? ""}
           />
         </div>
       </div>
@@ -231,7 +250,7 @@ export function CreateJobForm() {
       <div className="space-y-2">
         <Label htmlFor="openings">Openings</Label>
         <Input
-          defaultValue={1}
+          defaultValue={initialJob?.openings ?? 1}
           id="openings"
           max={1_000}
           min={1}
@@ -247,6 +266,7 @@ export function CreateJobForm() {
           id="skills"
           name="skills"
           placeholder="React, TypeScript, PostgreSQL"
+          defaultValue={initialJob?.skills.join(", ")}
           required
         />
         <p className="text-xs text-muted-foreground">
@@ -256,7 +276,12 @@ export function CreateJobForm() {
 
       <div className="space-y-2">
         <Label htmlFor="expiresAt">Application deadline</Label>
-        <Input id="expiresAt" name="expiresAt" type="date" />
+        <Input
+          defaultValue={formatDateInput(initialJob?.expiresAt)}
+          id="expiresAt"
+          name="expiresAt"
+          type="date"
+        />
       </div>
 
       {error ? (
