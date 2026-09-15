@@ -63,7 +63,7 @@ export function MarketingHeader() {
         aria-label="Primary navigation"
         className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6"
       >
-        <Link className="shrink-0 text-lg font-bold tracking-tight" href="/">
+        <Link className="shrink-0 text-xl font-bold text-primary" href="/">
           Careerly
         </Link>
 
@@ -171,12 +171,7 @@ export function MarketingHeader() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                asChild
-                className="h-9 px-3 text-sm"
-                size="lg"
-                variant="outline"
-              >
+              <Button asChild variant="outline">
                 <Link href="/sign-in">Sign in</Link>
               </Button>
             )}

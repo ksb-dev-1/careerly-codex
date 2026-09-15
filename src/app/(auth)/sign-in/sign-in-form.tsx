@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
@@ -27,31 +30,25 @@ export function SignInForm() {
   }
 
   return (
-    <section className="w-full max-w-sm space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold">Sign in to Careerly</h1>
-        <p className="text-sm text-muted-foreground">
-          Continue with your preferred account.
-        </p>
-      </div>
-
+    <section className="space-y-4">
       <div className="space-y-3">
         <Button
-          className="w-full"
+          className="relative h-10 w-full text-sm font-semibold"
           disabled={isPending}
           onClick={() => handleSignIn("google")}
-          size="lg"
           variant="outline"
         >
+          <FcGoogle aria-hidden="true" className="absolute left-4 size-5" />
           Continue with Google
         </Button>
+
         <Button
-          className="w-full"
+          className="relative h-10 w-full text-sm font-semibold"
           disabled={isPending}
           onClick={() => handleSignIn("github")}
-          size="lg"
           variant="outline"
         >
+          <FaGithub aria-hidden="true" className="absolute left-4 size-5" />
           Continue with GitHub
         </Button>
       </div>
