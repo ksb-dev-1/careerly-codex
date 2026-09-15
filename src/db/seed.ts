@@ -40,7 +40,7 @@ const seededJobs = [
     title: "Backend Developer",
     description:
       "<h2>About the role</h2><p>Design and maintain reliable backend services for our growing platform.</p><h3>Responsibilities</h3><ul><li>Build REST APIs</li><li>Design database schemas</li><li>Monitor service performance</li></ul>",
-    location: "Hyderabad, Telangana",
+    location: "India",
     employmentType: "FULL_TIME" as const,
     workplaceType: "REMOTE" as const,
     experienceLevel: "MID" as const,
@@ -85,7 +85,7 @@ const seededJobs = [
     title: "Senior Full Stack Engineer",
     description:
       "<h2>About the role</h2><p>Lead the delivery of full-stack features across our hiring platform.</p><h3>Responsibilities</h3><ul><li>Own technical projects</li><li>Review system architecture</li><li>Mentor other engineers</li></ul>",
-    location: "Remote, India",
+    location: "India",
     employmentType: "FULL_TIME" as const,
     workplaceType: "REMOTE" as const,
     experienceLevel: "SENIOR" as const,
