@@ -85,7 +85,7 @@ const seededJobs = [
     title: "Senior Full Stack Engineer",
     description:
       "<h2>About the role</h2><p>Lead the delivery of full-stack features across our hiring platform.</p><h3>Responsibilities</h3><ul><li>Own technical projects</li><li>Review system architecture</li><li>Mentor other engineers</li></ul>",
-    location: null,
+    location: "Remote, India",
     employmentType: "FULL_TIME" as const,
     workplaceType: "REMOTE" as const,
     experienceLevel: "SENIOR" as const,
@@ -115,19 +115,43 @@ async function seed() {
     throw new Error("EMPLOYER_ID must belong to an employer account.");
   }
 
-  await db
-    .insert(job)
-    .values(
-      seededJobs.map((seededJob) => ({
-        ...seededJob,
-        employerId,
-        status: "PUBLISHED" as const,
-        publishedAt: new Date(),
-      })),
-    )
-    .onConflictDoNothing({
-      target: job.id,
-    });
+  const publishedAt = new Date();
+  const expiresAt = new Date(publishedAt);
+  expiresAt.setDate(expiresAt.getDate() + 30);
+
+  for (const seededJob of seededJobs) {
+    const values = {
+      ...seededJob,
+      employerId,
+      status: "PUBLISHED" as const,
+      publishedAt,
+      expiresAt,
+    };
+
+    await db
+      .insert(job)
+      .values(values)
+      .onConflictDoUpdate({
+        target: job.id,
+        set: {
+          employerId: values.employerId,
+          title: values.title,
+          description: values.description,
+          location: values.location,
+          employmentType: values.employmentType,
+          workplaceType: values.workplaceType,
+          experienceLevel: values.experienceLevel,
+          minimumSalary: values.minimumSalary,
+          maximumSalary: values.maximumSalary,
+          currency: values.currency,
+          openings: values.openings,
+          skills: values.skills,
+          status: values.status,
+          publishedAt: values.publishedAt,
+          expiresAt: values.expiresAt,
+        },
+      });
+  }
 
   console.log(`${seededJobs.length} seed jobs are available.`);
 }
