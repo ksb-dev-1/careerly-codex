@@ -35,7 +35,8 @@ const getJob = cache(async (jobId: string) => {
       location: job.location,
       employmentType: job.employmentType,
       workplaceType: job.workplaceType,
-      experienceLevel: job.experienceLevel,
+      minimumExperience: job.minimumExperience,
+      maximumExperience: job.maximumExperience,
       minimumSalary: job.minimumSalary,
       maximumSalary: job.maximumSalary,
       currency: job.currency,
@@ -183,7 +184,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
 
               <p>
                 <span className="font-medium">Experience:</span>{" "}
-                {formatLabel(listing.experienceLevel)}
+                {listing.minimumExperience}–{listing.maximumExperience} years
               </p>
 
               <p>

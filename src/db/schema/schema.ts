@@ -137,13 +137,6 @@ export const workplaceType = pgEnum("workplace_type", [
   "HYBRID",
 ]);
 
-export const experienceLevel = pgEnum("experience_level", [
-  "ENTRY",
-  "MID",
-  "SENIOR",
-  "LEAD",
-]);
-
 export const job = pgTable(
   "job",
   {
@@ -158,11 +151,8 @@ export const job = pgTable(
       .default("FULL_TIME")
       .notNull(),
     workplaceType: workplaceType("workplace_type").default("ONSITE").notNull(),
-    experienceLevel: experienceLevel("experience_level")
-      .default("ENTRY")
-      .notNull(),
-    minimumExperience: integer("minimum_experience"),
-    maximumExperience: integer("maximum_experience"),
+    minimumExperience: integer("minimum_experience").notNull(),
+    maximumExperience: integer("maximum_experience").notNull(),
     minimumSalary: integer("minimum_salary"),
     maximumSalary: integer("maximum_salary"),
     currency: text("currency").default("INR").notNull(),

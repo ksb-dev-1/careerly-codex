@@ -73,7 +73,10 @@ export default async function EmployerJobDetailsPage({
       <section className="space-y-2 text-sm">
         <p>Employment: {listing.employmentType.replaceAll("_", " ")}</p>
         <p>Workplace: {listing.workplaceType.replaceAll("_", " ")}</p>
-        <p>Experience: {listing.experienceLevel}</p>
+        <p>
+          Experience:{" "}
+          {listing.minimumExperience}–{listing.maximumExperience} years
+        </p>
         <p>Location: {listing.location || "Not specified"}</p>
         <p>Openings: {listing.openings}</p>
         <p>Skills: {listing.skills.join(", ")}</p>

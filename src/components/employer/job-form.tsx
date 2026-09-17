@@ -21,7 +21,6 @@ import {
 import {
   CURRENCIES,
   EMPLOYMENT_TYPES,
-  EXPERIENCE_LEVELS,
   type JobInput,
   WORKPLACE_TYPES,
 } from "@/lib/validations/job";
@@ -36,6 +35,12 @@ function getOptionalNumber(formData: FormData, field: string) {
   const value = getString(formData, field).trim();
 
   return value ? Number(value) : null;
+}
+
+function getRequiredNumber(formData: FormData, field: string) {
+  const value = getString(formData, field).trim();
+
+  return value === "" ? Number.NaN : Number(value);
 }
 
 function formatOption(value: string) {
@@ -83,10 +88,8 @@ export function JobForm({
         formData,
         "workplaceType",
       ) as JobInput["workplaceType"],
-      experienceLevel: getString(
-        formData,
-        "experienceLevel",
-      ) as JobInput["experienceLevel"],
+      minimumExperience: getRequiredNumber(formData, "minimumExperience"),
+      maximumExperience: getRequiredNumber(formData, "maximumExperience"),
       minimumSalary: getOptionalNumber(formData, "minimumSalary"),
       maximumSalary: getOptionalNumber(formData, "maximumSalary"),
       currency: getString(formData, "currency") as JobInput["currency"],
@@ -197,22 +200,29 @@ export function JobForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="experienceLevel">Experience level</Label>
-          <Select
-            defaultValue={initialJob?.experienceLevel ?? "ENTRY"}
-            name="experienceLevel"
-          >
-            <SelectTrigger className="w-full" id="experienceLevel">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EXPERIENCE_LEVELS.map((level) => (
-                <SelectItem className="capitalize" key={level} value={level}>
-                  {formatOption(level)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="minimumExperience">Minimum experience (years)</Label>
+          <Input
+            id="minimumExperience"
+            name="minimumExperience"
+            type="number"
+            min={0}
+            max={50}
+            defaultValue={initialJob?.minimumExperience ?? ""}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="maximumExperience">Maximum experience (years)</Label>
+          <Input
+            id="maximumExperience"
+            name="maximumExperience"
+            type="number"
+            min={0}
+            max={50}
+            defaultValue={initialJob?.maximumExperience ?? ""}
+            required
+          />
         </div>
 
         <div className="space-y-2">

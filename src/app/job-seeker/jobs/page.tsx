@@ -63,7 +63,8 @@ export default async function JobSeekerJobsPage({
       location: job.location,
       workplaceType: job.workplaceType,
       employmentType: job.employmentType,
-      experienceLevel: job.experienceLevel,
+      minimumExperience: job.minimumExperience,
+      maximumExperience: job.maximumExperience,
       skills: job.skills,
       publishedAt: job.publishedAt,
     })
@@ -152,7 +153,7 @@ export default async function JobSeekerJobsPage({
                     </span>
 
                     <span>
-                      {currentJob.experienceLevel.toLowerCase()} level
+                      {currentJob.minimumExperience}–{currentJob.maximumExperience} years
                     </span>
                   </div>
 
@@ -167,10 +168,13 @@ export default async function JobSeekerJobsPage({
                       <div className="flex flex-wrap gap-3 text-sm font-medium text-primary">
                         {appliedByJob.has(currentJob.id) ? (
                           <span>
-                            Application: {appliedByJob.get(currentJob.id)?.toLowerCase()}
+                            Application:{" "}
+                            {appliedByJob.get(currentJob.id)?.toLowerCase()}
                           </span>
                         ) : null}
-                        {savedJobIds.has(currentJob.id) ? <span>Saved</span> : null}
+                        {savedJobIds.has(currentJob.id) ? (
+                          <span>Saved</span>
+                        ) : null}
                       </div>
                       <BookmarkButton
                         initialSaved={savedJobIds.has(currentJob.id)}

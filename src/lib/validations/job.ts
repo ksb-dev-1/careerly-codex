@@ -9,8 +9,6 @@ export const EMPLOYMENT_TYPES = [
 
 export const WORKPLACE_TYPES = ["ONSITE", "REMOTE", "HYBRID"] as const;
 
-export const EXPERIENCE_LEVELS = ["ENTRY", "MID", "SENIOR", "LEAD"] as const;
-
 export const CURRENCIES = ["INR", "USD", "EUR"] as const;
 
 export const jobInputSchema = z
@@ -20,7 +18,8 @@ export const jobInputSchema = z
     location: z.string().trim().max(120).optional(),
     employmentType: z.enum(EMPLOYMENT_TYPES),
     workplaceType: z.enum(WORKPLACE_TYPES),
-    experienceLevel: z.enum(EXPERIENCE_LEVELS),
+    minimumExperience: z.number().int().min(0).max(50),
+    maximumExperience: z.number().int().min(0).max(50),
     minimumSalary: z.number().int().nonnegative().nullable(),
     maximumSalary: z.number().int().nonnegative().nullable(),
     currency: z.enum(CURRENCIES),
@@ -33,6 +32,14 @@ export const jobInputSchema = z
     expiresAt: z.date().nullable(),
   })
   .superRefine((input, context) => {
+    if (input.minimumExperience >= input.maximumExperience) {
+      context.addIssue({
+        code: "custom",
+        message: "Maximum experience must be greater than minimum experience.",
+        path: ["maximumExperience"],
+      });
+    }
+
     if (input.workplaceType !== "REMOTE" && !input.location) {
       context.addIssue({
         code: "custom",
