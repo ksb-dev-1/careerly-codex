@@ -5,6 +5,7 @@ import {
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -160,6 +161,8 @@ export const job = pgTable(
     experienceLevel: experienceLevel("experience_level")
       .default("ENTRY")
       .notNull(),
+    minimumExperience: integer("minimum_experience"),
+    maximumExperience: integer("maximum_experience"),
     minimumSalary: integer("minimum_salary"),
     maximumSalary: integer("maximum_salary"),
     currency: text("currency").default("INR").notNull(),
@@ -212,6 +215,23 @@ export const application = pgTable(
       table.jobSeekerId,
       table.createdAt,
     ),
+  ],
+);
+
+export const bookmark = pgTable(
+  "bookmark",
+  {
+    jobSeekerId: text("job_seeker_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    jobId: text("job_id")
+      .notNull()
+      .references(() => job.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.jobSeekerId, table.jobId] }),
+    index("bookmark_job_id_idx").on(table.jobId),
   ],
 );
 

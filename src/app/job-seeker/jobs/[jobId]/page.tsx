@@ -8,10 +8,11 @@ import { and, eq, gt, isNull, or } from "drizzle-orm";
 import type { Metadata } from "next";
 
 import { JobDescription } from "@/components/employer/job-description";
+import { BookmarkButton } from "@/components/job-seeker/bookmark-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/db";
-import { application, employerProfile, job } from "@/db/schema";
+import { application, bookmark, employerProfile, job } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import { ApplyToJobForm } from "./apply-to-job-form";
@@ -115,6 +116,17 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         })
       : null;
 
+  const existingBookmark =
+    session?.user.role === "JOB_SEEKER"
+      ? await db.query.bookmark.findFirst({
+          columns: { jobId: true },
+          where: and(
+            eq(bookmark.jobId, listing.id),
+            eq(bookmark.jobSeekerId, session.user.id),
+          ),
+        })
+      : null;
+
   const salary =
     listing.minimumSalary !== null && listing.maximumSalary !== null
       ? `${formatSalary(
@@ -193,6 +205,14 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               </div>
             </CardContent>
           </Card>
+
+          {session?.user.role === "JOB_SEEKER" ? (
+            <BookmarkButton
+              className="w-full"
+              initialSaved={Boolean(existingBookmark)}
+              jobId={listing.id}
+            />
+          ) : null}
 
           {session?.user.role === "JOB_SEEKER" ? (
             <Card>

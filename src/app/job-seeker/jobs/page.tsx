@@ -1,12 +1,15 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 
-import { and, count, desc, eq, gt, isNull, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, isNull, or } from "drizzle-orm";
 import type { Metadata } from "next";
 
+import { BookmarkButton } from "@/components/job-seeker/bookmark-button";
 import { JobsPagination } from "@/components/jobs-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/db";
-import { employerProfile, job } from "@/db/schema";
+import { application, bookmark, employerProfile, job } from "@/db/schema";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Find jobs | Careerly",
@@ -71,6 +74,33 @@ export default async function JobSeekerJobsPage({
     .limit(JOBS_PER_PAGE)
     .offset(offset);
 
+  const session = await auth.api.getSession({ headers: await headers() });
+  const appliedByJob = new Map<string, string>();
+  const savedJobIds = new Set<string>();
+
+  if (session?.user.role === "JOB_SEEKER" && jobs.length > 0) {
+    const jobIds = jobs.map((currentJob) => currentJob.id);
+    const [applications, bookmarks] = await Promise.all([
+      db.query.application.findMany({
+        columns: { jobId: true, status: true },
+        where: and(
+          eq(application.jobSeekerId, session.user.id),
+          inArray(application.jobId, jobIds),
+        ),
+      }),
+      db.query.bookmark.findMany({
+        columns: { jobId: true },
+        where: and(
+          eq(bookmark.jobSeekerId, session.user.id),
+          inArray(bookmark.jobId, jobIds),
+        ),
+      }),
+    ]);
+
+    for (const item of applications) appliedByJob.set(item.jobId, item.status);
+    for (const item of bookmarks) savedJobIds.add(item.jobId);
+  }
+
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-12">
       <div>
@@ -130,6 +160,23 @@ export default async function JobSeekerJobsPage({
                     <p className="mt-4 text-sm">
                       {currentJob.skills.join(" · ")}
                     </p>
+                  ) : null}
+
+                  {session?.user.role === "JOB_SEEKER" ? (
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex flex-wrap gap-3 text-sm font-medium text-primary">
+                        {appliedByJob.has(currentJob.id) ? (
+                          <span>
+                            Application: {appliedByJob.get(currentJob.id)?.toLowerCase()}
+                          </span>
+                        ) : null}
+                        {savedJobIds.has(currentJob.id) ? <span>Saved</span> : null}
+                      </div>
+                      <BookmarkButton
+                        initialSaved={savedJobIds.has(currentJob.id)}
+                        jobId={currentJob.id}
+                      />
+                    </div>
                   ) : null}
                 </CardContent>
               </Card>
