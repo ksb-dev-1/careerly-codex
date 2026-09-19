@@ -116,6 +116,23 @@ export const jobSeekerProfile = pgTable("job_seeker_profile", {
     .notNull(),
 });
 
+export const resume = pgTable("resume", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  publicId: text("public_id").notNull(),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
 export const jobStatus = pgEnum("job_status", ["DRAFT", "PUBLISHED", "CLOSED"]);
 export const applicationStatus = pgEnum("application_status", [
   "SUBMITTED",
@@ -232,6 +249,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
   applications: many(application),
   employerProfile: one(employerProfile),
   jobSeekerProfile: one(jobSeekerProfile),
+  resume: one(resume),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -267,6 +285,13 @@ export const jobSeekerProfileRelations = relations(
     }),
   }),
 );
+
+export const resumeRelations = relations(resume, ({ one }) => ({
+  user: one(user, {
+    fields: [resume.userId],
+    references: [user.id],
+  }),
+}));
 
 export const jobRelations = relations(job, ({ one, many }) => ({
   employer: one(user, {

@@ -129,7 +129,9 @@ export function JobForm({
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="title">Job title</Label>
+        <Label htmlFor="title" className="font-semibold">
+          Job title
+        </Label>
         <Input
           id="title"
           maxLength={120}

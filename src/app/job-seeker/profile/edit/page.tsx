@@ -9,6 +9,7 @@ import { jobSeekerProfile } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import { JobSeekerProfileForm } from "./job-seeker-profile-form";
+import { ResumeUploadForm } from "./resume-upload-form";
 
 export const metadata: Metadata = {
   title: "Edit job-seeker profile | Careerly",
@@ -43,6 +44,10 @@ export default async function EditJobSeekerProfilePage() {
 
       <div className="mt-8">
         <JobSeekerProfileForm initialProfile={profile} />
+      </div>
+
+      <div className="mt-8">
+        <ResumeUploadForm />
       </div>
     </main>
   );
