@@ -1,10 +1,25 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 
-import { and, count, desc, eq, gt, inArray, isNull, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  isNull,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
 import type { Metadata } from "next";
 
 import { BookmarkButton } from "@/components/job-seeker/bookmark-button";
+import { JobFilters } from "@/components/job-seeker/job-filters";
 import { JobsPagination } from "@/components/jobs-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/db";
@@ -23,13 +38,112 @@ const JOBS_PER_PAGE = 5;
 type JobSeekerJobsPageProps = {
   searchParams: Promise<{
     page?: string | string[];
+    q?: string | string[];
+    location?: string | string[];
+    skill?: string | string[];
+    workplaceType?: string | string[];
+    employmentType?: string | string[];
+    experience?: string | string[];
+    minimumSalary?: string | string[];
+    sort?: string | string[];
   }>;
 };
+
+const workplaceTypes = ["ONSITE", "REMOTE", "HYBRID"] as const;
+const employmentTypes = [
+  "FULL_TIME",
+  "PART_TIME",
+  "CONTRACT",
+  "INTERNSHIP",
+] as const;
+const sortOptions = [
+  "NEWEST",
+  "OLDEST",
+  "SALARY_HIGH",
+  "SALARY_LOW",
+] as const;
+
+function getSingleSearchParam(value: string | string[] | undefined) {
+  return typeof value === "string" ? value.trim().slice(0, 100) : "";
+}
+
+function getAllowedValue<T extends readonly string[]>(
+  value: string,
+  allowedValues: T,
+) {
+  return allowedValues.includes(value as T[number])
+    ? (value as T[number])
+    : "";
+}
+
+function getPositiveNumber(value: string) {
+  if (!value) return null;
+
+  const number = Number(value);
+
+  return Number.isSafeInteger(number) && number >= 0 ? number : null;
+}
+
+function formatSalary(amount: number, currency: string) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function getSalaryLabel({
+  minimumSalary,
+  maximumSalary,
+  currency,
+}: {
+  minimumSalary: number | null;
+  maximumSalary: number | null;
+  currency: string;
+}) {
+  if (minimumSalary !== null && maximumSalary !== null) {
+    return `${formatSalary(minimumSalary, currency)} – ${formatSalary(
+      maximumSalary,
+      currency,
+    )}`;
+  }
+
+  if (minimumSalary !== null) {
+    return `From ${formatSalary(minimumSalary, currency)}`;
+  }
+
+  if (maximumSalary !== null) {
+    return `Up to ${formatSalary(maximumSalary, currency)}`;
+  }
+
+  return "Salary not specified";
+}
 
 export default async function JobSeekerJobsPage({
   searchParams,
 }: JobSeekerJobsPageProps) {
-  const { page } = await searchParams;
+  const params = await searchParams;
+  const { page } = params;
+
+  const q = getSingleSearchParam(params.q);
+  const location = getSingleSearchParam(params.location);
+  const skill = getSingleSearchParam(params.skill);
+  const workplaceType = getAllowedValue(
+    getSingleSearchParam(params.workplaceType),
+    workplaceTypes,
+  );
+  const employmentType = getAllowedValue(
+    getSingleSearchParam(params.employmentType),
+    employmentTypes,
+  );
+  const experience = getPositiveNumber(getSingleSearchParam(params.experience));
+  const minimumSalary = getPositiveNumber(
+    getSingleSearchParam(params.minimumSalary),
+  );
+  const sort = getAllowedValue(
+    getSingleSearchParam(params.sort),
+    sortOptions,
+  ) || "NEWEST";
 
   const parsedPage = typeof page === "string" ? Number.parseInt(page, 10) : 1;
 
@@ -41,14 +155,72 @@ export default async function JobSeekerJobsPage({
   const activeJobCondition = and(
     eq(job.status, "PUBLISHED"),
     or(isNull(job.expiresAt), gt(job.expiresAt, now)),
-  );
+  )!;
+
+  const jobConditions = [activeJobCondition];
+
+  if (q) {
+    const searchPattern = `%${q}%`;
+    jobConditions.push(
+      or(
+        ilike(job.title, searchPattern),
+        ilike(job.description, searchPattern),
+        ilike(employerProfile.companyName, searchPattern),
+        ilike(job.location, searchPattern),
+        ilike(sql<string>`array_to_string(${job.skills}, ' ')`, searchPattern),
+      )!,
+    );
+  }
+
+  if (location) {
+    jobConditions.push(ilike(job.location, `%${location}%`));
+  }
+
+  if (skill) {
+    jobConditions.push(
+      ilike(sql<string>`array_to_string(${job.skills}, ' ')`, `%${skill}%`),
+    );
+  }
+
+  if (workplaceType) {
+    jobConditions.push(eq(job.workplaceType, workplaceType));
+  }
+
+  if (employmentType) {
+    jobConditions.push(eq(job.employmentType, employmentType));
+  }
+
+  if (experience !== null) {
+    jobConditions.push(
+      and(
+        lte(job.minimumExperience, experience),
+        gte(job.maximumExperience, experience),
+      )!,
+    );
+  }
+
+  if (minimumSalary !== null) {
+    jobConditions.push(gte(job.maximumSalary, minimumSalary));
+  }
+
+  const filteredJobCondition = and(...jobConditions);
+
+  const jobOrder =
+    sort === "OLDEST"
+      ? asc(job.publishedAt)
+      : sort === "SALARY_HIGH"
+        ? sql`${job.maximumSalary} DESC NULLS LAST`
+        : sort === "SALARY_LOW"
+          ? sql`${job.minimumSalary} ASC NULLS LAST`
+          : desc(job.publishedAt);
 
   const [{ totalJobs }] = await db
     .select({
       totalJobs: count(),
     })
     .from(job)
-    .where(activeJobCondition);
+    .leftJoin(employerProfile, eq(employerProfile.userId, job.employerId))
+    .where(filteredJobCondition);
 
   const totalPages = Math.max(1, Math.ceil(totalJobs / JOBS_PER_PAGE));
 
@@ -65,13 +237,16 @@ export default async function JobSeekerJobsPage({
       employmentType: job.employmentType,
       minimumExperience: job.minimumExperience,
       maximumExperience: job.maximumExperience,
+      minimumSalary: job.minimumSalary,
+      maximumSalary: job.maximumSalary,
+      currency: job.currency,
       skills: job.skills,
       publishedAt: job.publishedAt,
     })
     .from(job)
     .leftJoin(employerProfile, eq(employerProfile.userId, job.employerId))
-    .where(activeJobCondition)
-    .orderBy(desc(job.publishedAt))
+    .where(filteredJobCondition)
+    .orderBy(jobOrder)
     .limit(JOBS_PER_PAGE)
     .offset(offset);
 
@@ -111,10 +286,24 @@ export default async function JobSeekerJobsPage({
         </p>
       </div>
 
+      <JobFilters
+        initialFilters={{
+          q,
+          location,
+          skill,
+          workplaceType,
+          employmentType,
+          experience: experience === null ? "" : String(experience),
+          minimumSalary:
+            minimumSalary === null ? "" : String(minimumSalary),
+          sort,
+        }}
+      />
+
       {jobs.length === 0 ? (
         <Card className="mt-8 border-dashed">
           <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            There are no active jobs available right now.
+            No active jobs match these filters.
           </CardContent>
         </Card>
       ) : (
@@ -155,6 +344,7 @@ export default async function JobSeekerJobsPage({
                     <span>
                       {currentJob.minimumExperience}–{currentJob.maximumExperience} years
                     </span>
+                    <span>{getSalaryLabel(currentJob)}</span>
                   </div>
 
                   {currentJob.skills.length > 0 ? (
@@ -190,6 +380,17 @@ export default async function JobSeekerJobsPage({
           <JobsPagination
             basePath="/job-seeker/jobs"
             currentPage={currentPage}
+            searchParams={{
+              q: q || undefined,
+              location: location || undefined,
+              skill: skill || undefined,
+              workplaceType: workplaceType || undefined,
+              employmentType: employmentType || undefined,
+              experience: experience === null ? undefined : String(experience),
+              minimumSalary:
+                minimumSalary === null ? undefined : String(minimumSalary),
+              sort: sort === "NEWEST" ? undefined : sort,
+            }}
             totalPages={totalPages}
           />
         </>

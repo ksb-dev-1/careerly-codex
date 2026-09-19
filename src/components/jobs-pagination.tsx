@@ -11,6 +11,7 @@ type JobsPaginationProps = {
   basePath: string;
   currentPage: number;
   totalPages: number;
+  searchParams?: Record<string, string | undefined>;
 };
 
 const MAX_VISIBLE_PAGES = 5;
@@ -32,10 +33,23 @@ export function JobsPagination({
   basePath,
   currentPage,
   totalPages,
+  searchParams,
 }: JobsPaginationProps) {
   const visiblePages = getVisiblePages(currentPage, totalPages);
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
+
+  function getPageHref(page: number) {
+    const params = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(searchParams ?? {})) {
+      if (value) params.set(key, value);
+    }
+
+    params.set("page", String(page));
+
+    return `${basePath}?${params.toString()}`;
+  }
 
   return (
     <Pagination className="mt-8">
@@ -46,7 +60,7 @@ export function JobsPagination({
             className={
               hasPreviousPage ? undefined : "pointer-events-none opacity-50"
             }
-            href={hasPreviousPage ? `${basePath}?page=${currentPage - 1}` : "#"}
+            href={hasPreviousPage ? getPageHref(currentPage - 1) : "#"}
             tabIndex={hasPreviousPage ? undefined : -1}
           />
         </PaginationItem>
@@ -54,7 +68,7 @@ export function JobsPagination({
         {visiblePages.map((page) => (
           <PaginationItem key={page}>
             <PaginationLink
-              href={`${basePath}?page=${page}`}
+              href={getPageHref(page)}
               isActive={page === currentPage}
             >
               {page}
@@ -68,7 +82,7 @@ export function JobsPagination({
             className={
               hasNextPage ? undefined : "pointer-events-none opacity-50"
             }
-            href={hasNextPage ? `${basePath}?page=${currentPage + 1}` : "#"}
+            href={hasNextPage ? getPageHref(currentPage + 1) : "#"}
             tabIndex={hasNextPage ? undefined : -1}
           />
         </PaginationItem>
