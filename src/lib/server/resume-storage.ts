@@ -40,3 +40,25 @@ export async function deleteResumeAsset(publicId: string) {
     invalidate: true,
   });
 }
+
+export async function deleteResumeFolder(userId: string) {
+  await cloudinary.api.delete_folder(
+    `careerly/job-seeker/resumes/${userId}`,
+    { skip_backup: true },
+  );
+}
+
+export function getResumeDownloadUrl(publicId: string, fileName: string) {
+  const format = fileName.split(".").pop()?.toLowerCase();
+
+  if (!format) {
+    throw new Error("Resume file format is missing.");
+  }
+
+  return cloudinary.utils.private_download_url(publicId, format, {
+    resource_type: "raw",
+    type: "authenticated",
+    attachment: true,
+    expires_at: Math.floor(Date.now() / 1000) + 60,
+  });
+}

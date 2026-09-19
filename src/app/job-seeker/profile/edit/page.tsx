@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
 import { db } from "@/db";
-import { jobSeekerProfile } from "@/db/schema";
+import { jobSeekerProfile, resume } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import { JobSeekerProfileForm } from "./job-seeker-profile-form";
@@ -16,7 +16,11 @@ export const metadata: Metadata = {
   description: "Update your job-seeker profile on Careerly.",
 };
 
-export default async function EditJobSeekerProfilePage() {
+export default async function EditJobSeekerProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string | string[] }>;
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -29,9 +33,22 @@ export default async function EditJobSeekerProfilePage() {
     redirect("/");
   }
 
-  const profile = await db.query.jobSeekerProfile.findFirst({
-    where: eq(jobSeekerProfile.userId, session.user.id),
-  });
+  const { returnTo: requestedReturnTo } = await searchParams;
+  const returnTo =
+    typeof requestedReturnTo === "string" &&
+    /^\/job-seeker\/jobs\/[0-9a-f-]+$/i.test(requestedReturnTo)
+      ? requestedReturnTo
+      : null;
+
+  const [profile, currentResume] = await Promise.all([
+    db.query.jobSeekerProfile.findFirst({
+      where: eq(jobSeekerProfile.userId, session.user.id),
+    }),
+    db.query.resume.findFirst({
+      columns: { id: true, fileName: true, fileSize: true },
+      where: eq(resume.userId, session.user.id),
+    }),
+  ]);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-12">
@@ -47,7 +64,10 @@ export default async function EditJobSeekerProfilePage() {
       </div>
 
       <div className="mt-8">
-        <ResumeUploadForm />
+        <ResumeUploadForm
+          initialResume={currentResume ?? null}
+          returnTo={returnTo}
+        />
       </div>
     </main>
   );

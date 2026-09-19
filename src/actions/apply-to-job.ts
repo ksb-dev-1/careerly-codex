@@ -6,7 +6,7 @@ import { and, eq, gt, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { application, job } from "@/db/schema";
+import { application, job, resume } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 const applyToJobSchema = z.object({
@@ -32,6 +32,18 @@ export async function applyToJob(input: {
     return { success: false as const, message: "Invalid application details." };
   }
 
+  const currentResume = await db.query.resume.findFirst({
+    columns: { id: true },
+    where: eq(resume.userId, session.user.id),
+  });
+
+  if (!currentResume) {
+    return {
+      success: false as const,
+      message: "Upload a resume before applying for jobs.",
+    };
+  }
+
   const now = new Date();
   const availableJob = await db.query.job.findFirst({
     columns: { id: true },
@@ -49,6 +61,8 @@ export async function applyToJob(input: {
     };
   }
 
+  const applicationDate = new Date();
+
   const [created] = await db
     .insert(application)
     .values({
@@ -56,9 +70,18 @@ export async function applyToJob(input: {
       jobId: parsed.data.jobId,
       jobSeekerId: session.user.id,
       coverLetter: parsed.data.coverLetter || null,
+      createdAt: applicationDate,
+      updatedAt: applicationDate,
     })
-    .onConflictDoNothing({
+    .onConflictDoUpdate({
       target: [application.jobId, application.jobSeekerId],
+      set: {
+        status: "SUBMITTED",
+        coverLetter: parsed.data.coverLetter || null,
+        createdAt: applicationDate,
+        updatedAt: applicationDate,
+      },
+      setWhere: eq(application.status, "WITHDRAWN"),
     })
     .returning({ id: application.id });
 

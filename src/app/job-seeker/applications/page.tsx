@@ -11,6 +11,8 @@ import { db } from "@/db";
 import { application, employerProfile, job } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
+import { WithdrawApplicationButton } from "./withdraw-application-button";
+
 export const metadata: Metadata = {
   title: "Your applications | Careerly",
   description: "Track the jobs you have applied to on Careerly.",
@@ -122,6 +124,12 @@ export default async function ApplicationsPage({
                       dateStyle: "medium",
                     }).format(item.createdAt)}
                   </p>
+                  {item.status === "SUBMITTED" ||
+                  item.status === "SHORTLISTED" ? (
+                    <div className="mt-4">
+                      <WithdrawApplicationButton applicationId={item.id} />
+                    </div>
+                  ) : null}
                 </CardContent>
               </Card>
             ))}

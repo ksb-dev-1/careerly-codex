@@ -12,7 +12,13 @@ import { BookmarkButton } from "@/components/job-seeker/bookmark-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/db";
-import { application, bookmark, employerProfile, job } from "@/db/schema";
+import {
+  application,
+  bookmark,
+  employerProfile,
+  job,
+  resume,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import { ApplyToJobForm } from "./apply-to-job-form";
@@ -128,6 +134,14 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         })
       : null;
 
+  const currentResume =
+    session?.user.role === "JOB_SEEKER"
+      ? await db.query.resume.findFirst({
+          columns: { id: true },
+          where: eq(resume.userId, session.user.id),
+        })
+      : null;
+
   const salary =
     listing.minimumSalary !== null && listing.maximumSalary !== null
       ? `${formatSalary(
@@ -222,7 +236,8 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               </CardHeader>
 
               <CardContent>
-                {existingApplication ? (
+                {existingApplication &&
+                existingApplication.status !== "WITHDRAWN" ? (
                   <div className="space-y-2 text-sm">
                     <p className="font-medium text-primary">
                       You have applied to this job.
@@ -239,8 +254,23 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                       }).format(existingApplication.createdAt)}
                     </p>
                   </div>
-                ) : (
+                ) : currentResume ? (
                   <ApplyToJobForm jobId={listing.id} />
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Upload a resume before applying for this job.
+                    </p>
+                    <Button asChild className="w-full">
+                      <Link
+                        href={`/job-seeker/profile/edit?returnTo=${encodeURIComponent(
+                          `/job-seeker/jobs/${listing.id}`,
+                        )}`}
+                      >
+                        Upload resume
+                      </Link>
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>

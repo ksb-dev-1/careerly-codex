@@ -3,8 +3,10 @@
 import { useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { deleteResume } from "@/actions/delete-resume";
 import { uploadResume } from "@/actions/upload-resume";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +20,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { validateResumeFile } from "@/lib/validations/resume";
 
-export function ResumeUploadForm() {
+type ResumeSummary = {
+  id: string;
+  fileName: string;
+  fileSize: number | null;
+};
+
+function formatFileSize(bytes: number | null) {
+  if (bytes === null) return "Size unavailable";
+
+  return bytes < 1024 * 1024
+    ? `${(bytes / 1024).toFixed(1)} KB`
+    : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function ResumeUploadForm({
+  initialResume,
+  returnTo,
+}: {
+  initialResume: ResumeSummary | null;
+  returnTo: string | null;
+}) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isSuccessful, setIsSuccessful] = useState(false);
@@ -56,11 +78,36 @@ export function ResumeUploadForm() {
 
         if (result.success) {
           form.reset();
-          router.refresh();
+
+          if (returnTo) {
+            router.push(returnTo);
+          } else {
+            router.refresh();
+          }
         }
       } catch {
         setIsSuccessful(false);
         setMessage("Unable to upload the resume.");
+      }
+    });
+  }
+
+  function handleDelete() {
+    if (!window.confirm("Delete your current resume?")) return;
+
+    setMessage(null);
+
+    startTransition(async () => {
+      try {
+        const result = await deleteResume();
+
+        setIsSuccessful(result.success);
+        setMessage(result.message);
+
+        if (result.success) router.refresh();
+      } catch {
+        setIsSuccessful(false);
+        setMessage("Unable to delete the resume.");
       }
     });
   }
@@ -74,7 +121,38 @@ export function ResumeUploadForm() {
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-6">
+        {initialResume ? (
+          <div className="space-y-3 border-b pb-6">
+            <div>
+              <p className="font-medium">{initialResume.fileName}</p>
+              <p className="text-sm text-muted-foreground">
+                {formatFileSize(initialResume.fileSize)}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button asChild type="button" variant="outline">
+                <Link
+                  href={`/api/resumes/${initialResume.id}`}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  Download resume
+                </Link>
+              </Button>
+              <Button
+                disabled={isPending}
+                onClick={handleDelete}
+                type="button"
+                variant="destructive"
+              >
+                {isPending ? "Deleting..." : "Delete resume"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
         <form
           className="space-y-4"
           encType="multipart/form-data"
@@ -93,7 +171,11 @@ export function ResumeUploadForm() {
           </div>
 
           <Button disabled={isPending} type="submit">
-            {isPending ? "Uploading..." : "Upload resume"}
+            {isPending
+              ? "Uploading..."
+              : initialResume
+                ? "Replace resume"
+                : "Upload resume"}
           </Button>
 
           {message ? (

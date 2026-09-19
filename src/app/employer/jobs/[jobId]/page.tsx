@@ -7,9 +7,16 @@ import type { Metadata } from "next";
 
 import { JobDescription } from "@/components/employer/job-description";
 import { JobsPagination } from "@/components/jobs-pagination";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { db } from "@/db";
-import { application, job, jobSeekerProfile, user } from "@/db/schema";
+import {
+  application,
+  job,
+  jobSeekerProfile,
+  resume,
+  user,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import { ApplicationStatusActions } from "./application-status-action";
@@ -67,6 +74,8 @@ export default async function EmployerJobDetailsPage({
       experience: jobSeekerProfile.experience,
       location: jobSeekerProfile.location,
       skills: jobSeekerProfile.skills,
+      resumeId: resume.id,
+      resumeFileName: resume.fileName,
     })
     .from(application)
     .innerJoin(user, eq(application.jobSeekerId, user.id))
@@ -74,6 +83,7 @@ export default async function EmployerJobDetailsPage({
       jobSeekerProfile,
       eq(application.jobSeekerId, jobSeekerProfile.userId),
     )
+    .leftJoin(resume, eq(application.jobSeekerId, resume.userId))
     .where(eq(application.jobId, listing.id))
     .orderBy(desc(application.createdAt), desc(application.id))
     .limit(5)
@@ -150,6 +160,21 @@ export default async function EmployerJobDetailsPage({
                       ? applicant.skills.join(", ")
                       : "Not provided"}
                   </p>
+                  {applicant.resumeId ? (
+                    <Button asChild type="button" variant="outline">
+                      <Link
+                        href={`/api/resumes/${applicant.resumeId}`}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        Download {applicant.resumeFileName ?? "resume"}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Resume: Not available
+                    </p>
+                  )}
                   <p className="text-muted-foreground">
                     Status: {applicant.status.toLowerCase()}
                   </p>
