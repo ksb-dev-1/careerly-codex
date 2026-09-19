@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 
+import { SearchX } from "lucide-react";
 import {
   and,
   asc,
@@ -18,10 +19,11 @@ import {
 } from "drizzle-orm";
 import type { Metadata } from "next";
 
-import { BookmarkButton } from "@/components/job-seeker/bookmark-button";
 import { JobFilters } from "@/components/job-seeker/job-filters";
+import { JobCard } from "@/components/job-seeker/job-card";
 import { JobsPagination } from "@/components/jobs-pagination";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { db } from "@/db";
 import { application, bookmark, employerProfile, job } from "@/db/schema";
 import { auth } from "@/lib/auth";
@@ -84,41 +86,6 @@ function getPositiveNumber(value: string) {
   return Number.isSafeInteger(number) && number >= 0 ? number : null;
 }
 
-function formatSalary(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function getSalaryLabel({
-  minimumSalary,
-  maximumSalary,
-  currency,
-}: {
-  minimumSalary: number | null;
-  maximumSalary: number | null;
-  currency: string;
-}) {
-  if (minimumSalary !== null && maximumSalary !== null) {
-    return `${formatSalary(minimumSalary, currency)} – ${formatSalary(
-      maximumSalary,
-      currency,
-    )}`;
-  }
-
-  if (minimumSalary !== null) {
-    return `From ${formatSalary(minimumSalary, currency)}`;
-  }
-
-  if (maximumSalary !== null) {
-    return `Up to ${formatSalary(maximumSalary, currency)}`;
-  }
-
-  return "Salary not specified";
-}
-
 export default async function JobSeekerJobsPage({
   searchParams,
 }: JobSeekerJobsPageProps) {
@@ -144,6 +111,26 @@ export default async function JobSeekerJobsPage({
     getSingleSearchParam(params.sort),
     sortOptions,
   ) || "NEWEST";
+  const hasActiveFilters = Boolean(
+    q ||
+      location ||
+      skill ||
+      workplaceType ||
+      employmentType ||
+      experience !== null ||
+      minimumSalary !== null ||
+      sort !== "NEWEST",
+  );
+  const filterKey = [
+    q,
+    location,
+    skill,
+    workplaceType,
+    employmentType,
+    experience,
+    minimumSalary,
+    sort,
+  ].join("|");
 
   const parsedPage = typeof page === "string" ? Number.parseInt(page, 10) : 1;
 
@@ -251,7 +238,10 @@ export default async function JobSeekerJobsPage({
     .offset(offset);
 
   const session = await auth.api.getSession({ headers: await headers() });
-  const appliedByJob = new Map<string, string>();
+  const appliedByJob = new Map<
+    string,
+    (typeof application.$inferSelect)["status"]
+  >();
   const savedJobIds = new Set<string>();
 
   if (session?.user.role === "JOB_SEEKER" && jobs.length > 0) {
@@ -278,15 +268,18 @@ export default async function JobSeekerJobsPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-12">
-      <div>
-        <h1 className="text-2xl font-semibold">Find jobs</h1>
+    <main className="mx-auto w-full max-w-6xl px-6 py-10 sm:py-12">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          Find your next job
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Explore current opportunities from employers on Careerly.
+          Search opportunities from employers hiring on Careerly.
         </p>
-      </div>
+      </header>
 
       <JobFilters
+        key={filterKey}
         initialFilters={{
           q,
           location,
@@ -298,103 +291,85 @@ export default async function JobSeekerJobsPage({
             minimumSalary === null ? "" : String(minimumSalary),
           sort,
         }}
-      />
-
-      {jobs.length === 0 ? (
-        <Card className="mt-8 border-dashed">
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            No active jobs match these filters.
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="mt-8 grid gap-4">
-            {jobs.map((currentJob) => (
-              <Card key={currentJob.id}>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    <Link
-                      className="hover:text-primary"
-                      href={`/job-seeker/jobs/${currentJob.id}`}
-                    >
-                      {currentJob.title}
-                    </Link>
-                  </CardTitle>
-
-                  <p className="text-sm text-muted-foreground">
-                    {currentJob.companyName ?? "Company"}
-                    {currentJob.location ? ` · ${currentJob.location}` : ""}
-                  </p>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                    <span>
-                      {currentJob.employmentType
-                        .replaceAll("_", " ")
-                        .toLowerCase()}
-                    </span>
-
-                    <span>
-                      {currentJob.workplaceType
-                        .replaceAll("_", " ")
-                        .toLowerCase()}
-                    </span>
-
-                    <span>
-                      {currentJob.minimumExperience}–{currentJob.maximumExperience} years
-                    </span>
-                    <span>{getSalaryLabel(currentJob)}</span>
-                  </div>
-
-                  {currentJob.skills.length > 0 ? (
-                    <p className="mt-4 text-sm">
-                      {currentJob.skills.join(" · ")}
-                    </p>
-                  ) : null}
-
-                  {session?.user.role === "JOB_SEEKER" ? (
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex flex-wrap gap-3 text-sm font-medium text-primary">
-                        {appliedByJob.has(currentJob.id) ? (
-                          <span>
-                            Application:{" "}
-                            {appliedByJob.get(currentJob.id)?.toLowerCase()}
-                          </span>
-                        ) : null}
-                        {savedJobIds.has(currentJob.id) ? (
-                          <span>Saved</span>
-                        ) : null}
-                      </div>
-                      <BookmarkButton
-                        initialSaved={savedJobIds.has(currentJob.id)}
-                        jobId={currentJob.id}
-                      />
-                    </div>
-                  ) : null}
-                </CardContent>
-              </Card>
-            ))}
+      >
+        <section aria-labelledby="job-results-title">
+        <div className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 id="job-results-title" className="text-xl font-semibold tracking-tight">
+              {totalJobs} {totalJobs === 1 ? "opportunity" : "opportunities"}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground" aria-live="polite">
+              {totalJobs > 0
+                ? `Showing ${offset + 1}–${Math.min(
+                    offset + jobs.length,
+                    totalJobs,
+                  )} of ${totalJobs}`
+                : "Try broadening your search to see more roles."}
+            </p>
           </div>
+          {totalPages > 1 ? (
+            <p className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </p>
+          ) : null}
+        </div>
 
-          <JobsPagination
-            basePath="/job-seeker/jobs"
-            currentPage={currentPage}
-            searchParams={{
-              q: q || undefined,
-              location: location || undefined,
-              skill: skill || undefined,
-              workplaceType: workplaceType || undefined,
-              employmentType: employmentType || undefined,
-              experience: experience === null ? undefined : String(experience),
-              minimumSalary:
-                minimumSalary === null ? undefined : String(minimumSalary),
-              sort: sort === "NEWEST" ? undefined : sort,
-            }}
-            totalPages={totalPages}
-          />
-        </>
-      )}
+        {jobs.length === 0 ? (
+          <Card className="mt-6 border-dashed">
+            <CardContent className="flex flex-col items-center px-6 py-14 text-center">
+              <div className="flex size-12 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                <SearchX aria-hidden="true" className="size-5" />
+              </div>
+              <h3 className="mt-5 text-lg font-semibold">
+                {hasActiveFilters ? "No matching jobs" : "No active jobs yet"}
+              </h3>
+              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                {hasActiveFilters
+                  ? "Try removing one or two filters, or search with a broader keyword."
+                  : "New opportunities will appear here as soon as employers publish them."}
+              </p>
+              {hasActiveFilters ? (
+                <Button asChild className="mt-5" variant="outline">
+                  <Link href="/job-seeker/jobs">Clear all filters</Link>
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="mt-4 grid gap-4">
+              {jobs.map((currentJob) => (
+                <JobCard
+                  applicationStatus={appliedByJob.get(currentJob.id)}
+                  isJobSeeker={session?.user.role === "JOB_SEEKER"}
+                  isSaved={savedJobIds.has(currentJob.id)}
+                  job={currentJob}
+                  key={currentJob.id}
+                />
+              ))}
+            </div>
+
+            <JobsPagination
+              basePath="/job-seeker/jobs"
+              currentPage={currentPage}
+              searchParams={{
+                q: q || undefined,
+                location: location || undefined,
+                skill: skill || undefined,
+                workplaceType: workplaceType || undefined,
+                employmentType: employmentType || undefined,
+                experience:
+                  experience === null ? undefined : String(experience),
+                minimumSalary:
+                  minimumSalary === null ? undefined : String(minimumSalary),
+                sort: sort === "NEWEST" ? undefined : sort,
+              }}
+              totalPages={totalPages}
+            />
+          </>
+        )}
+        </section>
+      </JobFilters>
     </main>
   );
 }

@@ -52,7 +52,7 @@ export function JobsPagination({
   }
 
   return (
-    <Pagination className="mt-8">
+    <Pagination className="mt-10 border-t pt-8">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
@@ -68,6 +68,11 @@ export function JobsPagination({
         {visiblePages.map((page) => (
           <PaginationItem key={page}>
             <PaginationLink
+              className={
+                page === currentPage
+                  ? "border-primary/40 bg-accent text-primary"
+                  : undefined
+              }
               href={getPageHref(page)}
               isActive={page === currentPage}
             >

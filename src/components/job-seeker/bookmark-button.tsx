@@ -12,12 +12,14 @@ type BookmarkButtonProps = {
   jobId: string;
   initialSaved: boolean;
   className?: string;
+  iconOnly?: boolean;
 };
 
 export function BookmarkButton({
   jobId,
   initialSaved,
   className,
+  iconOnly = false,
 }: BookmarkButtonProps) {
   const router = useRouter();
   const [saved, setSaved] = useState(initialSaved);
@@ -48,18 +50,33 @@ export function BookmarkButton({
   return (
     <div className="space-y-2">
       <Button
+        aria-label={saved ? "Remove bookmark" : "Save job"}
         aria-pressed={saved}
         className={className}
         disabled={isPending}
         onClick={handleClick}
+        size={iconOnly ? "icon" : "default"}
+        title={saved ? "Remove bookmark" : "Save job"}
         type="button"
         variant="outline"
       >
         <Bookmark
           aria-hidden="true"
-          className={saved ? "size-4 fill-current" : "size-4"}
+          className={`${saved ? "fill-current" : ""} ${
+            isPending ? "animate-pulse" : ""
+          }`}
         />
-        {isPending ? "Updating..." : saved ? "Remove bookmark" : "Save job"}
+        {iconOnly ? (
+          <span className="sr-only">
+            {isPending ? "Updating bookmark" : saved ? "Remove bookmark" : "Save job"}
+          </span>
+        ) : isPending ? (
+          "Updating..."
+        ) : saved ? (
+          "Remove bookmark"
+        ) : (
+          "Save job"
+        )}
       </Button>
       {error ? (
         <p className="text-sm text-destructive" role="alert">
