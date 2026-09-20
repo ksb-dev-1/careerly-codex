@@ -21,13 +21,13 @@ const questions = [
     value: "application-limits",
     question: "How many jobs can I apply to each day?",
     answer:
-      "We plan to allow one application per day on Free and five per day on Premium. These limits are not active yet.",
+      "Free members can apply to one job per day, while Premium members can apply to five. The daily limit resets at midnight IST.",
   },
   {
     value: "premium",
     question: "Is Premium available now?",
     answer:
-      "Not yet. We haven't set a price or enabled Stripe checkout. We'll update the Pricing page when memberships launch.",
+      "The Premium application limit is ready, but public upgrades are not available yet. We'll enable them when Stripe checkout is integrated.",
   },
 ];
 
@@ -51,7 +51,7 @@ export function FaqSection() {
             Good questions deserve clear answers.
           </h2>
           <p className="mt-5 leading-7 text-muted-foreground">
-            Here are the essentials about getting started and our upcoming
+            Here are the essentials about getting started and Careerly
             memberships.
           </p>
         </div>

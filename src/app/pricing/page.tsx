@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Pricing | Careerly",
   description:
-    "Explore Careerly's planned Free and Premium job-seeker memberships.",
+    "Compare Careerly's Free and Premium job-seeker memberships.",
 };
 
 export default function PricingPage() {
@@ -11,14 +11,13 @@ export default function PricingPage() {
     <main className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-24">
       <div className="max-w-2xl">
         <p className="text-sm font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-          Planned memberships
+          Job-seeker memberships
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
           A plan for your next move.
         </h1>
         <p className="mt-5 text-lg leading-8 text-muted-foreground">
-          We&apos;re designing simple job-seeker plans with clear daily
-          application limits. Pricing and subscriptions are coming later.
+          Choose how much room you need to explore new opportunities each day.
         </p>
       </div>
 
@@ -26,8 +25,8 @@ export default function PricingPage() {
         className="mt-10 rounded-xl border border-border bg-muted/50 px-5 py-4 text-sm leading-6 text-muted-foreground"
         role="note"
       >
-        These limits are planned, not active. Premium checkout will be available
-        after Stripe is integrated.
+        Daily limits are now enforced. Premium checkout will become available
+        when Stripe billing is integrated.
       </p>
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
@@ -44,7 +43,9 @@ export default function PricingPage() {
           <p className="mt-10 border-t border-border pt-6 text-lg font-semibold">
             1 job application per day
           </p>
-          <p className="mt-2 text-sm text-muted-foreground">Planned limit</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Active for every job seeker
+          </p>
         </article>
 
         <article className="rounded-3xl border border-border bg-card p-8 text-card-foreground">
@@ -62,7 +63,7 @@ export default function PricingPage() {
             5 job applications per day
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Planned limit · Price to be announced
+            Checkout coming soon · Price to be announced
           </p>
         </article>
       </div>

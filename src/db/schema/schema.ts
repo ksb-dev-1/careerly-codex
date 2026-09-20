@@ -11,6 +11,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 
+export const membershipPlan = pgEnum("membership_plan", ["FREE", "PREMIUM"]);
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -23,6 +25,7 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   role: text("role", { enum: ["JOB_SEEKER", "EMPLOYER"] }),
+  membershipPlan: membershipPlan("membership_plan").default("FREE").notNull(),
 });
 
 export const session = pgTable(

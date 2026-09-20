@@ -57,6 +57,13 @@
       "when": 1789797766351,
       "tag": "0007_youthful_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789866360885,
+      "tag": "0008_free_morg",
+      "breakpoints": true
     }
   ]
 }

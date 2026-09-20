@@ -20,6 +20,7 @@ import {
   resume,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { getDailyApplicationQuota } from "@/lib/server/application-quota";
 
 import { ApplyToJobForm } from "./apply-to-job-form";
 
@@ -142,6 +143,23 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         })
       : null;
 
+  const dailyQuota =
+    session?.user.role === "JOB_SEEKER"
+      ? await getDailyApplicationQuota(session.user.id)
+      : null;
+
+  const withdrawnApplicationAlreadyCountedToday = Boolean(
+    dailyQuota &&
+      existingApplication?.status === "WITHDRAWN" &&
+      existingApplication.createdAt >= dailyQuota.startsAt &&
+      existingApplication.createdAt < dailyQuota.resetsAt,
+  );
+
+  const canApplyToday = Boolean(
+    dailyQuota &&
+      (dailyQuota.remaining > 0 || withdrawnApplicationAlreadyCountedToday),
+  );
+
   const salary =
     listing.minimumSalary !== null && listing.maximumSalary !== null
       ? `${formatSalary(
@@ -254,8 +272,14 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                       }).format(existingApplication.createdAt)}
                     </p>
                   </div>
-                ) : currentResume ? (
-                  <ApplyToJobForm jobId={listing.id} />
+                ) : currentResume && dailyQuota ? (
+                  <ApplyToJobForm
+                    canApplyToday={canApplyToday}
+                    dailyLimit={dailyQuota.limit}
+                    jobId={listing.id}
+                    membershipPlan={dailyQuota.membershipPlan}
+                    remainingApplications={dailyQuota.remaining}
+                  />
                 ) : (
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">

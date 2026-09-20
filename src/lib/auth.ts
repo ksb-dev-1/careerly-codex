@@ -24,6 +24,12 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      membershipPlan: {
+        type: ["FREE", "PREMIUM"],
+        required: false,
+        defaultValue: "FREE",
+        input: false,
+      },
     },
   },
 });
