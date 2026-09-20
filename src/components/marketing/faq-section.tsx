@@ -27,7 +27,7 @@ const questions = [
     value: "premium",
     question: "Is Premium available now?",
     answer:
-      "The Premium application limit is ready, but public upgrades are not available yet. We'll enable them when Stripe checkout is integrated.",
+      "Yes. Job seekers can upgrade through secure Stripe Checkout and manage or cancel their subscription from Stripe's billing portal.",
   },
 ];
 

@@ -12,6 +12,16 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const membershipPlan = pgEnum("membership_plan", ["FREE", "PREMIUM"]);
+export const subscriptionStatus = pgEnum("subscription_status", [
+  "INCOMPLETE",
+  "INCOMPLETE_EXPIRED",
+  "TRIALING",
+  "ACTIVE",
+  "PAST_DUE",
+  "CANCELED",
+  "UNPAID",
+  "PAUSED",
+]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -26,6 +36,7 @@ export const user = pgTable("user", {
     .notNull(),
   role: text("role", { enum: ["JOB_SEEKER", "EMPLOYER"] }),
   membershipPlan: membershipPlan("membership_plan").default("FREE").notNull(),
+  stripeCustomerId: text("stripe_customer_id").unique(),
 });
 
 export const session = pgTable(
@@ -134,6 +145,36 @@ export const resume = pgTable("resume", {
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
+});
+
+export const subscription = pgTable(
+  "subscription",
+  {
+    userId: text("user_id")
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    stripeSubscriptionId: text("stripe_subscription_id").notNull().unique(),
+    stripeCustomerId: text("stripe_customer_id").notNull(),
+    stripePriceId: text("stripe_price_id").notNull(),
+    status: subscriptionStatus("status").notNull(),
+    currentPeriodStart: timestamp("current_period_start"),
+    currentPeriodEnd: timestamp("current_period_end"),
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
+    lastStripeEventAt: timestamp("last_stripe_event_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("subscription_customer_id_idx").on(table.stripeCustomerId)],
+);
+
+export const stripeWebhookEvent = pgTable("stripe_webhook_event", {
+  id: text("id").primaryKey(),
+  type: text("type").notNull(),
+  stripeCreatedAt: timestamp("stripe_created_at").notNull(),
+  processedAt: timestamp("processed_at").defaultNow().notNull(),
 });
 
 export const jobStatus = pgEnum("job_status", ["DRAFT", "PUBLISHED", "CLOSED"]);
@@ -253,6 +294,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
   employerProfile: one(employerProfile),
   jobSeekerProfile: one(jobSeekerProfile),
   resume: one(resume),
+  subscription: one(subscription),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -292,6 +334,13 @@ export const jobSeekerProfileRelations = relations(
 export const resumeRelations = relations(resume, ({ one }) => ({
   user: one(user, {
     fields: [resume.userId],
+    references: [user.id],
+  }),
+}));
+
+export const subscriptionRelations = relations(subscription, ({ one }) => ({
+  user: one(user, {
+    fields: [subscription.userId],
     references: [user.id],
   }),
 }));

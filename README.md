@@ -16,6 +16,36 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Stripe Premium subscriptions
+
+Create a recurring Premium price in Stripe, then add these values to `.env`:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PREMIUM_MONTHLY_PRICE_ID=price_...
+STRIPE_PREMIUM_YEARLY_PRICE_ID=price_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
+
+For local webhook testing, install the Stripe CLI and run:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Copy the webhook signing secret printed by the CLI into
+`STRIPE_WEBHOOK_SECRET`. In production, configure the same webhook URL and
+subscribe it to these events:
+
+- `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+
+Enable and configure the Stripe Customer Portal before testing the **Manage
+billing** button.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
