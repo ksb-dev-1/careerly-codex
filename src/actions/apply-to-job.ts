@@ -7,12 +7,14 @@ import { and, count, eq, gt, gte, isNull, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { application, job, resume, user } from "@/db/schema";
+import { application, employerProfile, job, resume, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import {
   DAILY_APPLICATION_LIMITS,
   getIndiaDayBounds,
 } from "@/lib/server/application-quota";
+import { sendApplicationConfirmationEmail } from "@/lib/server/send-application-confirmation-email";
+import { sendNewApplicationEmail } from "@/lib/server/send-new-application-email";
 
 const applyToJobSchema = z.object({
   jobId: z.uuid(),
@@ -55,14 +57,25 @@ export async function applyToJob(input: {
   }
 
   const now = new Date();
-  const availableJob = await db.query.job.findFirst({
-    columns: { id: true },
-    where: and(
-      eq(job.id, parsed.data.jobId),
-      eq(job.status, "PUBLISHED"),
-      or(isNull(job.expiresAt), gt(job.expiresAt, now)),
-    ),
-  });
+  const [availableJob] = await db
+    .select({
+      id: job.id,
+      title: job.title,
+      companyName: employerProfile.companyName,
+      employerName: user.name,
+      employerEmail: user.email,
+    })
+    .from(job)
+    .innerJoin(user, eq(user.id, job.employerId))
+    .leftJoin(employerProfile, eq(employerProfile.userId, job.employerId))
+    .where(
+      and(
+        eq(job.id, parsed.data.jobId),
+        eq(job.status, "PUBLISHED"),
+        or(isNull(job.expiresAt), gt(job.expiresAt, now)),
+      ),
+    )
+    .limit(1);
 
   if (!availableJob) {
     return {
@@ -176,6 +189,7 @@ export async function applyToJob(input: {
     return {
       success: true as const,
       applicationId: created.id,
+      submittedAt: applicationDate.toISOString(),
       membershipPlan,
       dailyLimit,
       remainingApplications: Math.max(dailyLimit - applicationsUsed, 0),
@@ -188,6 +202,63 @@ export async function applyToJob(input: {
     revalidatePath(`/job-seeker/jobs/${parsed.data.jobId}`);
     revalidatePath("/job-seeker/applications");
     revalidatePath(`/employer/jobs/${parsed.data.jobId}`);
+
+    try {
+      const applicationUrl = process.env.BETTER_AUTH_URL;
+
+      if (!applicationUrl) {
+        console.error(
+          `Application ${result.applicationId} was created, but BETTER_AUTH_URL is not configured.`,
+        );
+      } else {
+        const [applicantEmailResult, employerEmailResult] =
+          await Promise.allSettled([
+            sendApplicationConfirmationEmail({
+              applicationId: result.applicationId,
+              submittedAt: result.submittedAt,
+              recipientEmail: session.user.email,
+              applicantName: session.user.name,
+              companyName: availableJob.companyName ?? "the employer",
+              jobTitle: availableJob.title,
+              applicationsUrl: new URL(
+                "/job-seeker/applications",
+                applicationUrl,
+              ).toString(),
+            }),
+            sendNewApplicationEmail({
+              applicationId: result.applicationId,
+              submittedAt: result.submittedAt,
+              recipientEmail: availableJob.employerEmail,
+              employerName: availableJob.employerName,
+              applicantName: session.user.name,
+              jobTitle: availableJob.title,
+              jobApplicationsUrl: new URL(
+                `/employer/jobs/${availableJob.id}`,
+                applicationUrl,
+              ).toString(),
+            }),
+          ]);
+
+        if (applicantEmailResult.status === "rejected") {
+          console.error(
+            `Application ${result.applicationId} was created, but its applicant confirmation email could not be sent:`,
+            applicantEmailResult.reason,
+          );
+        }
+
+        if (employerEmailResult.status === "rejected") {
+          console.error(
+            `Application ${result.applicationId} was created, but its employer notification email could not be sent:`,
+            employerEmailResult.reason,
+          );
+        }
+      }
+    } catch (error) {
+      console.error(
+        `Application ${result.applicationId} was created, but its confirmation email could not be sent:`,
+        error,
+      );
+    }
   }
 
   return result;
