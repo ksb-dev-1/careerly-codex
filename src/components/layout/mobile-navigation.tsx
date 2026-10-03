@@ -11,6 +11,7 @@ import {
   CircleUserRound,
   FilePlus2,
   FileText,
+  LayoutDashboard,
   LogIn,
   LogOut,
   Menu,
@@ -59,6 +60,11 @@ function getNavigationItems(
 ): NavItem[] {
   if (role === "JOB_SEEKER") {
     return [
+      {
+        href: "/job-seeker/dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+      },
       { href: "/job-seeker/jobs", label: "Jobs", icon: BriefcaseBusiness },
       { href: "/job-seeker/bookmarks", label: "Bookmarks", icon: Bookmark },
       {

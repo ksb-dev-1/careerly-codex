@@ -1,6 +1,12 @@
 import Link from "next/link";
 
-import { Bookmark, BriefcaseBusiness, FileText, Tag } from "lucide-react";
+import {
+  Bookmark,
+  BriefcaseBusiness,
+  FileText,
+  LayoutDashboard,
+  Tag,
+} from "lucide-react";
 
 const linkClassName =
   "inline-flex items-center gap-2 whitespace-nowrap text-sm font-semibold text-foreground/80 hover:text-primary";
@@ -21,6 +27,15 @@ export function GuestNavLinks() {
 export function JobSeekerNavLinks() {
   return (
     <>
+      <Link
+        aria-label="Dashboard"
+        className={linkClassName}
+        href="/job-seeker/dashboard"
+      >
+        <LayoutDashboard aria-hidden="true" className="size-4" />
+        <span className="hidden lg:inline">Dashboard</span>
+      </Link>
+
       <Link aria-label="Jobs" className={linkClassName} href="/job-seeker/jobs">
         <BriefcaseBusiness aria-hidden="true" className="size-4" />
         <span className="hidden lg:inline">Jobs</span>
