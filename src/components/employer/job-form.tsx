@@ -57,6 +57,18 @@ function formatDateInput(date: Date | null | undefined) {
   return `${year}-${month}-${day}`;
 }
 
+type JobFieldErrors = Partial<Record<keyof JobInput, string[]>>;
+
+function FieldError({ errors }: { errors?: string[] }) {
+  const message = errors?.[0];
+
+  return message ? (
+    <p className="text-xs text-destructive" role="alert">
+      {message}
+    </p>
+  ) : null;
+}
+
 export function JobForm({
   initialJob,
   jobId,
@@ -65,6 +77,7 @@ export function JobForm({
   jobId?: string;
 }) {
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<JobFieldErrors>({});
   const [description, setDescription] = useState(initialJob?.description ?? "");
   const [isPending, startTransition] = useTransition();
 
@@ -99,6 +112,7 @@ export function JobForm({
     };
 
     setError(null);
+    setFieldErrors({});
 
     startTransition(async () => {
       try {
@@ -107,11 +121,8 @@ export function JobForm({
           : await createJob(input);
 
         if (!result.success) {
-          const firstFieldError = Object.values(result.fieldErrors)
-            .flat()
-            .find(Boolean);
-
-          setError(firstFieldError ?? result.message);
+          setError(result.message);
+          setFieldErrors(result.fieldErrors as JobFieldErrors);
           return;
         }
 
@@ -128,6 +139,12 @@ export function JobForm({
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+
       <div className="space-y-2">
         <Label htmlFor="title" className="font-semibold">
           Job title
@@ -141,6 +158,7 @@ export function JobForm({
           defaultValue={initialJob?.title}
           required
         />
+        <FieldError errors={fieldErrors.title} />
       </div>
 
       <div className="space-y-2">
@@ -149,6 +167,7 @@ export function JobForm({
           initialContent={initialJob?.description ?? ""}
           onChange={setDescription}
         />
+        <FieldError errors={fieldErrors.description} />
       </div>
 
       <div className="space-y-2">
@@ -160,6 +179,7 @@ export function JobForm({
           placeholder="Bengaluru, India"
           defaultValue={initialJob?.location}
         />
+        <FieldError errors={fieldErrors.location} />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
@@ -180,6 +200,7 @@ export function JobForm({
               ))}
             </SelectContent>
           </Select>
+          <FieldError errors={fieldErrors.employmentType} />
         </div>
 
         <div className="space-y-2">
@@ -199,6 +220,7 @@ export function JobForm({
               ))}
             </SelectContent>
           </Select>
+          <FieldError errors={fieldErrors.workplaceType} />
         </div>
 
         <div className="space-y-2">
@@ -212,6 +234,7 @@ export function JobForm({
             defaultValue={initialJob?.minimumExperience ?? ""}
             required
           />
+          <FieldError errors={fieldErrors.minimumExperience} />
         </div>
 
         <div className="space-y-2">
@@ -225,6 +248,7 @@ export function JobForm({
             defaultValue={initialJob?.maximumExperience ?? ""}
             required
           />
+          <FieldError errors={fieldErrors.maximumExperience} />
         </div>
 
         <div className="space-y-2">
@@ -241,6 +265,7 @@ export function JobForm({
               ))}
             </SelectContent>
           </Select>
+          <FieldError errors={fieldErrors.currency} />
         </div>
       </div>
 
@@ -254,6 +279,7 @@ export function JobForm({
             type="number"
             defaultValue={initialJob?.minimumSalary ?? ""}
           />
+          <FieldError errors={fieldErrors.minimumSalary} />
         </div>
 
         <div className="space-y-2">
@@ -265,6 +291,7 @@ export function JobForm({
             type="number"
             defaultValue={initialJob?.maximumSalary ?? ""}
           />
+          <FieldError errors={fieldErrors.maximumSalary} />
         </div>
       </div>
 
@@ -279,6 +306,7 @@ export function JobForm({
           required
           type="number"
         />
+        <FieldError errors={fieldErrors.openings} />
       </div>
 
       <div className="space-y-2">
@@ -293,6 +321,7 @@ export function JobForm({
         <p className="text-xs text-muted-foreground">
           Separate skills with commas.
         </p>
+        <FieldError errors={fieldErrors.skills} />
       </div>
 
       <div className="space-y-2">
@@ -303,13 +332,8 @@ export function JobForm({
           name="expiresAt"
           type="date"
         />
+        <FieldError errors={fieldErrors.expiresAt} />
       </div>
-
-      {error ? (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      ) : null}
 
       <Button disabled={isPending} type="submit">
         {isPending ? "Saving..." : jobId ? "Save changes" : "Create draft"}

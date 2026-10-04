@@ -21,6 +21,7 @@ import { auth } from "@/lib/auth";
 
 import { ApplicationStatusActions } from "./application-status-action";
 import { CloseJobButton } from "./close-job-button";
+import { JobManagementActions } from "./job-management-actions";
 import { PublishJobButton } from "./publish-job-button";
 
 export const metadata: Metadata = {
@@ -49,6 +50,11 @@ export default async function EmployerJobDetailsPage({
   });
 
   if (!listing) notFound();
+
+  const isExpired =
+    listing.status === "PUBLISHED" &&
+    listing.expiresAt !== null &&
+    listing.expiresAt <= new Date();
 
   const [{ applicationCount }] = await db
     .select({ applicationCount: count() })
@@ -98,7 +104,7 @@ export default async function EmployerJobDetailsPage({
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">{listing.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Status: {listing.status.toLowerCase()}
+          Status: {isExpired ? "expired" : listing.status.toLowerCase()}
         </p>
         <p className="text-sm text-muted-foreground">
           Applications: {applicationCount}
@@ -106,7 +112,7 @@ export default async function EmployerJobDetailsPage({
         {listing.status === "DRAFT" ? (
           <PublishJobButton jobId={listing.id} />
         ) : null}
-        {listing.status === "PUBLISHED" ? (
+        {listing.status === "PUBLISHED" && !isExpired ? (
           <CloseJobButton jobId={listing.id} />
         ) : null}
         {listing.status !== "CLOSED" ? (
@@ -117,6 +123,10 @@ export default async function EmployerJobDetailsPage({
             Edit job
           </Link>
         ) : null}
+        <JobManagementActions
+          canDelete={listing.status === "DRAFT"}
+          jobId={listing.id}
+        />
       </div>
 
       <section className="space-y-3">

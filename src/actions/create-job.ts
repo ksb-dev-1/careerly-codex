@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { eq } from "drizzle-orm";
@@ -84,6 +85,9 @@ export async function createJob(input: JobInput) {
   if (!createdJob) {
     throw new Error("Unable to create the job.");
   }
+
+  revalidatePath("/employer/dashboard");
+  revalidatePath("/employer/jobs");
 
   return {
     success: true as const,

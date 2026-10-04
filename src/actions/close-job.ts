@@ -38,5 +38,8 @@ export async function closeJob(jobId: string) {
   }
 
   revalidatePath("/employer/jobs");
+  revalidatePath("/employer/dashboard");
   revalidatePath(`/employer/jobs/${jobId}`);
+  revalidatePath("/job-seeker/jobs");
+  revalidatePath(`/job-seeker/jobs/${jobId}`);
 }

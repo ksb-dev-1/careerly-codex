@@ -67,6 +67,8 @@ export default async function EmployerJobsPage({
     where: employerCondition,
   });
 
+  const now = new Date();
+
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-12">
       <div className="flex items-center justify-between gap-4">
@@ -91,7 +93,13 @@ export default async function EmployerJobsPage({
       ) : (
         <>
           <ul className="mt-10 space-y-4">
-            {jobs.map((currentJob) => (
+            {jobs.map((currentJob) => {
+              const isExpired =
+                currentJob.status === "PUBLISHED" &&
+                currentJob.expiresAt !== null &&
+                currentJob.expiresAt <= now;
+
+              return (
               <li className="border p-5" key={currentJob.id}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="space-y-2">
@@ -113,7 +121,7 @@ export default async function EmployerJobsPage({
                   </div>
 
                   <span className="border px-2 py-1 text-xs">
-                    {currentJob.status.toLowerCase()}
+                    {isExpired ? "expired" : currentJob.status.toLowerCase()}
                   </span>
                 </div>
 
@@ -124,7 +132,8 @@ export default async function EmployerJobsPage({
                   }).format(currentJob.createdAt)}
                 </p>
               </li>
-            ))}
+              );
+            })}
           </ul>
 
           <JobsPagination

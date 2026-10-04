@@ -13,21 +13,59 @@ export const CURRENCIES = ["INR", "USD", "EUR"] as const;
 
 export const jobInputSchema = z
   .object({
-    title: z.string().trim().min(3).max(120),
-    description: z.string().trim().min(50).max(10_000),
-    location: z.string().trim().max(120).optional(),
+    title: z
+      .string()
+      .trim()
+      .min(3, "Job title must contain at least 3 characters.")
+      .max(120, "Job title cannot exceed 120 characters."),
+    description: z
+      .string()
+      .trim()
+      .min(50, "Description must contain at least 50 characters.")
+      .max(10_000, "Description cannot exceed 10,000 characters."),
+    location: z
+      .string()
+      .trim()
+      .max(120, "Location cannot exceed 120 characters.")
+      .optional(),
     employmentType: z.enum(EMPLOYMENT_TYPES),
     workplaceType: z.enum(WORKPLACE_TYPES),
-    minimumExperience: z.number().int().min(0).max(50),
-    maximumExperience: z.number().int().min(0).max(50),
-    minimumSalary: z.number().int().nonnegative().nullable(),
-    maximumSalary: z.number().int().nonnegative().nullable(),
+    minimumExperience: z
+      .number()
+      .int("Minimum experience must be a whole number.")
+      .min(0, "Minimum experience cannot be negative.")
+      .max(50, "Minimum experience cannot exceed 50 years."),
+    maximumExperience: z
+      .number()
+      .int("Maximum experience must be a whole number.")
+      .min(0, "Maximum experience cannot be negative.")
+      .max(50, "Maximum experience cannot exceed 50 years."),
+    minimumSalary: z
+      .number()
+      .int("Minimum salary must be a whole number.")
+      .nonnegative("Minimum salary cannot be negative.")
+      .nullable(),
+    maximumSalary: z
+      .number()
+      .int("Maximum salary must be a whole number.")
+      .nonnegative("Maximum salary cannot be negative.")
+      .nullable(),
     currency: z.enum(CURRENCIES),
-    openings: z.number().int().min(1).max(1_000),
+    openings: z
+      .number()
+      .int("Openings must be a whole number.")
+      .min(1, "Add at least one opening.")
+      .max(1_000, "Openings cannot exceed 1,000."),
     skills: z
-      .array(z.string().trim().min(1).max(50))
-      .min(1)
-      .max(30)
+      .array(
+        z
+          .string()
+          .trim()
+          .min(1, "Remove empty skills from the list.")
+          .max(50, "Each skill must be 50 characters or fewer."),
+      )
+      .min(1, "Add at least one skill.")
+      .max(30, "You can add up to 30 skills.")
       .transform((skills) => [...new Set(skills)]),
     expiresAt: z.date().nullable(),
   })

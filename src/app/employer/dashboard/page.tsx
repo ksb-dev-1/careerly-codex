@@ -86,10 +86,9 @@ export default async function EmployerDashboardPage() {
     [profile],
   ] = await Promise.all([
     db
-      .select({ status: job.status, total: count() })
+      .select({ status: job.status, expiresAt: job.expiresAt })
       .from(job)
-      .where(eq(job.employerId, employerId))
-      .groupBy(job.status),
+      .where(eq(job.employerId, employerId)),
     db
       .select({ total: count() })
       .from(application)
@@ -147,7 +146,16 @@ export default async function EmployerDashboardPage() {
     CLOSED: 0,
   };
 
-  for (const row of jobStatusRows) jobCounts[row.status] = row.total;
+  const now = new Date();
+
+  for (const row of jobStatusRows) {
+    const isExpired =
+      row.status === "PUBLISHED" &&
+      row.expiresAt !== null &&
+      row.expiresAt <= now;
+
+    jobCounts[isExpired ? "CLOSED" : row.status] += 1;
+  }
 
   const totalJobs = Object.values(jobCounts).reduce(
     (total, value) => total + value,
@@ -161,7 +169,11 @@ export default async function EmployerDashboardPage() {
     { label: "Total jobs", value: totalJobs, icon: BriefcaseBusiness },
     { label: "Published", value: jobCounts.PUBLISHED, icon: CheckCircle2 },
     { label: "Drafts", value: jobCounts.DRAFT, icon: FileText },
-    { label: "Closed", value: jobCounts.CLOSED, icon: CircleStop },
+    {
+      label: "Closed / expired",
+      value: jobCounts.CLOSED,
+      icon: CircleStop,
+    },
     { label: "Total applicants", value: totalApplicants, icon: UsersRound },
     { label: "New in 7 days", value: recentApplicants, icon: Clock3 },
   ];
