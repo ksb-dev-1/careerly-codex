@@ -25,7 +25,7 @@ export default async function EditEmployerProfilePage() {
   }
 
   if (session.user.role !== "EMPLOYER") {
-    redirect("/");
+    redirect("/unauthorized");
   }
 
   const profile = await db.query.employerProfile.findFirst({

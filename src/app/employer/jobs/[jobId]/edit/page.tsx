@@ -27,7 +27,7 @@ export default async function EditJobPage({
   });
 
   if (!session) redirect("/sign-in");
-  if (session.user.role !== "EMPLOYER") redirect("/");
+  if (session.user.role !== "EMPLOYER") redirect("/unauthorized");
 
   const { jobId } = await params;
 

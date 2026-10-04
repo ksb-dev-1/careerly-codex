@@ -78,7 +78,7 @@ export default async function JobSeekerDashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) redirect("/sign-in");
-  if (session.user.role !== "JOB_SEEKER") redirect("/");
+  if (session.user.role !== "JOB_SEEKER") redirect("/unauthorized");
 
   const userId = session.user.id;
   const now = new Date();

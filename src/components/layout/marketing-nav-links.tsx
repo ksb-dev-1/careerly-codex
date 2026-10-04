@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import {
+  Bell,
   Bookmark,
   BriefcaseBusiness,
   FileText,
@@ -16,6 +17,15 @@ function PricingLink() {
     <Link className={linkClassName} href="/pricing">
       <Tag aria-hidden="true" className="size-4" />
       Pricing
+    </Link>
+  );
+}
+
+function NotificationsLink() {
+  return (
+    <Link className={linkClassName} href="/notifications">
+      <Bell aria-hidden="true" className="size-4" />
+      <span className="hidden xl:inline">Notifications</span>
     </Link>
   );
 }
@@ -59,6 +69,8 @@ export function JobSeekerNavLinks() {
         <span className="hidden lg:inline">Applications</span>
       </Link>
 
+      <NotificationsLink />
+
       <PricingLink />
     </>
   );
@@ -84,6 +96,8 @@ export function EmployerNavLinks() {
         <BriefcaseBusiness aria-hidden="true" className="size-4" />
         <span className="hidden sm:inline">Your jobs</span>
       </Link>
+
+      <NotificationsLink />
 
       <PricingLink />
     </>

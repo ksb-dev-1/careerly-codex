@@ -36,7 +36,7 @@ export default async function EmployerJobsPage({
   }
 
   if (session.user.role !== "EMPLOYER") {
-    redirect("/");
+    redirect("/unauthorized");
   }
 
   const { page } = await searchParams;

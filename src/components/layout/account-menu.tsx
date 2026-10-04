@@ -5,7 +5,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { BriefcaseBusiness, LogOut, UserRound } from "lucide-react";
+import {
+  Bell,
+  BriefcaseBusiness,
+  LogOut,
+  Settings,
+  UserRound,
+} from "lucide-react";
 import { Avatar as AvatarPrimitive } from "radix-ui";
 
 import {
@@ -104,6 +110,20 @@ export function AccountMenu({
           <Link href={profileHref}>
             <UserRound aria-hidden="true" className="size-4" />
             {hasRole ? "Edit profile" : "Choose role"}
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild className="text-sm">
+          <Link href="/notifications">
+            <Bell aria-hidden="true" className="size-4" />
+            Notifications
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild className="text-sm">
+          <Link href="/account/settings">
+            <Settings aria-hidden="true" className="size-4" />
+            Account settings
           </Link>
         </DropdownMenuItem>
 

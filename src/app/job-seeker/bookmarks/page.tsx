@@ -27,7 +27,7 @@ export default async function BookmarksPage({ searchParams }: BookmarksPageProps
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) redirect("/sign-in");
-  if (session.user.role !== "JOB_SEEKER") redirect("/");
+  if (session.user.role !== "JOB_SEEKER") redirect("/unauthorized");
 
   const { page } = await searchParams;
   const pageNumber = typeof page === "string" ? Number(page) : 1;

@@ -12,6 +12,7 @@ import {
   deleteResumeAsset,
   uploadResumeAsset,
 } from "@/lib/server/resume-storage";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 import { validateResumeFile } from "@/lib/validations/resume";
 
 export async function uploadResume(formData: FormData) {
@@ -22,6 +23,13 @@ export async function uploadResume(formData: FormData) {
   if (!session || session.user.role !== "JOB_SEEKER") {
     throw new Error("Only signed-in job seekers can upload a resume.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "upload-resume",
+    limit: 10,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const file = formData.get("resume");
 

@@ -8,6 +8,7 @@ import { and, eq, gt, isNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { employerProfile, job } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 
 export async function publishJob(jobId: string) {
   const session = await auth.api.getSession({
@@ -17,6 +18,13 @@ export async function publishJob(jobId: string) {
   if (!session || session.user.role !== "EMPLOYER") {
     throw new Error("Only signed-in employers can publish jobs.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "publish-job",
+    limit: 20,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const profile = await db.query.employerProfile.findFirst({
     columns: { companyName: true },

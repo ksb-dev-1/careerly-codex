@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { job } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 
 function createCopyTitle(title: string) {
   const suffix = " (Copy)";
@@ -21,6 +22,13 @@ export async function duplicateJob(jobId: string) {
   if (!session || session.user.role !== "EMPLOYER") {
     throw new Error("Only signed-in employers can duplicate jobs.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "duplicate-job",
+    limit: 10,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const source = await db.query.job.findFirst({
     where: and(eq(job.id, jobId), eq(job.employerId, session.user.id)),

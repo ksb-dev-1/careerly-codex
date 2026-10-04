@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { job } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 
 export async function closeJob(jobId: string) {
   const session = await auth.api.getSession({
@@ -17,6 +18,13 @@ export async function closeJob(jobId: string) {
   if (!session || session.user.role !== "EMPLOYER") {
     throw new Error("Only signed-in employers can close jobs.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "close-job",
+    limit: 20,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const [closed] = await db
     .update(job)

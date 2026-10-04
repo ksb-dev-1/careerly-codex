@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
+  Bell,
   Bookmark,
   BriefcaseBusiness,
   CircleUserRound,
@@ -15,6 +16,7 @@ import {
   LogIn,
   LogOut,
   Menu,
+  Settings,
   Tag,
   UserRoundCog,
 } from "lucide-react";
@@ -72,7 +74,9 @@ function getNavigationItems(
         label: "Applications",
         icon: FileText,
       },
+      { href: "/notifications", label: "Notifications", icon: Bell },
       { href: profileHref, label: "Edit profile", icon: CircleUserRound },
+      { href: "/account/settings", label: "Account settings", icon: Settings },
       { href: "/pricing", label: "Pricing", icon: Tag },
     ];
   }
@@ -86,7 +90,9 @@ function getNavigationItems(
       },
       { href: "/employer/jobs", label: "Your jobs", icon: BriefcaseBusiness },
       { href: "/employer/jobs/create", label: "Create job", icon: FilePlus2 },
+      { href: "/notifications", label: "Notifications", icon: Bell },
       { href: profileHref, label: "Edit profile", icon: CircleUserRound },
+      { href: "/account/settings", label: "Account settings", icon: Settings },
       { href: "/pricing", label: "Pricing", icon: Tag },
     ];
   }
@@ -94,6 +100,8 @@ function getNavigationItems(
   if (signedIn) {
     return [
       { href: "/select-user-role", label: "Choose role", icon: UserRoundCog },
+      { href: "/notifications", label: "Notifications", icon: Bell },
+      { href: "/account/settings", label: "Account settings", icon: Settings },
       { href: "/pricing", label: "Pricing", icon: Tag },
     ];
   }

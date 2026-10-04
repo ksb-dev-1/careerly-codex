@@ -9,6 +9,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { application } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 
 const withdrawApplicationSchema = z.object({
   applicationId: z.uuid(),
@@ -22,6 +23,13 @@ export async function withdrawApplication(applicationId: string) {
   if (!session || session.user.role !== "JOB_SEEKER") {
     throw new Error("Only signed-in job seekers can withdraw applications.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "withdraw-application",
+    limit: 20,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const parsed = withdrawApplicationSchema.safeParse({
     applicationId,
@@ -59,8 +67,10 @@ export async function withdrawApplication(applicationId: string) {
   }
 
   revalidatePath("/job-seeker/applications");
+  revalidatePath("/job-seeker/dashboard");
   revalidatePath(`/job-seeker/jobs/${updatedApplication.jobId}`);
   revalidatePath(`/employer/jobs/${updatedApplication.jobId}`);
+  revalidatePath("/employer/dashboard");
 
   return {
     success: true as const,

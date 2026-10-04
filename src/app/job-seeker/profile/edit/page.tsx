@@ -30,7 +30,7 @@ export default async function EditJobSeekerProfilePage({
   }
 
   if (session.user.role !== "JOB_SEEKER") {
-    redirect("/");
+    redirect("/unauthorized");
   }
 
   const { returnTo: requestedReturnTo } = await searchParams;

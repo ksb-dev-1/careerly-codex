@@ -24,7 +24,7 @@ export default async function CreateJobPage() {
   }
 
   if (session.user.role !== "EMPLOYER") {
-    redirect("/");
+    redirect("/unauthorized");
   }
 
   const profile = await db.query.employerProfile.findFirst({

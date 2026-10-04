@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { jobSeekerProfile } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 
 export type JobSeekerProfileInput = {
   headline?: string;
@@ -30,6 +31,13 @@ export async function upsertJobSeekerProfile(input: JobSeekerProfileInput) {
   if (session.user.role !== "JOB_SEEKER") {
     throw new Error("Only job seekers can update this profile.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "update-job-seeker-profile",
+    limit: 30,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const skills = [
     ...new Set(input.skills.map((skill) => skill.trim()).filter(Boolean)),

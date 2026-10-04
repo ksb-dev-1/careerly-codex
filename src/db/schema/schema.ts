@@ -185,6 +185,13 @@ export const applicationStatus = pgEnum("application_status", [
   "WITHDRAWN",
 ]);
 
+export const notificationType = pgEnum("notification_type", [
+  "APPLICATION_SUBMITTED",
+  "NEW_APPLICATION",
+  "APPLICATION_SHORTLISTED",
+  "APPLICATION_REJECTED",
+]);
+
 export const employmentType = pgEnum("employment_type", [
   "FULL_TIME",
   "PART_TIME",
@@ -286,6 +293,44 @@ export const bookmark = pgTable(
   ],
 );
 
+export const notification = pgTable(
+  "notification",
+  {
+    id: text("id").primaryKey(),
+    recipientUserId: text("recipient_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    type: notificationType("type").notNull(),
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    href: text("href"),
+    readAt: timestamp("read_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("notification_recipient_created_at_idx").on(
+      table.recipientUserId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const mutationRateLimit = pgTable(
+  "mutation_rate_limit",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    windowStart: timestamp("window_start").notNull(),
+    requestCount: integer("request_count").default(1).notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.action, table.windowStart] }),
+  ],
+);
+
 export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
@@ -295,6 +340,8 @@ export const userRelations = relations(user, ({ many, one }) => ({
   jobSeekerProfile: one(jobSeekerProfile),
   resume: one(resume),
   subscription: one(subscription),
+  notifications: many(notification),
+  mutationRateLimits: many(mutationRateLimit),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -363,3 +410,20 @@ export const applicationRelations = relations(application, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const notificationRelations = relations(notification, ({ one }) => ({
+  recipient: one(user, {
+    fields: [notification.recipientUserId],
+    references: [user.id],
+  }),
+}));
+
+export const mutationRateLimitRelations = relations(
+  mutationRateLimit,
+  ({ one }) => ({
+    user: one(user, {
+      fields: [mutationRateLimit.userId],
+      references: [user.id],
+    }),
+  }),
+);

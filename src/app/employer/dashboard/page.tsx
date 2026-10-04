@@ -71,7 +71,7 @@ export default async function EmployerDashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) redirect("/sign-in");
-  if (session.user.role !== "EMPLOYER") redirect("/");
+  if (session.user.role !== "EMPLOYER") redirect("/unauthorized");
 
   const employerId = session.user.id;
   const sevenDaysAgo = new Date();

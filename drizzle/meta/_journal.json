@@ -71,6 +71,13 @@
       "when": 1789869170081,
       "tag": "0009_dazzling_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791124651432,
+      "tag": "0010_stale_robbie_robertson",
+      "breakpoints": true
     }
   ]
 }

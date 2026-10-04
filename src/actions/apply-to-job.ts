@@ -7,7 +7,14 @@ import { and, count, eq, gt, gte, isNull, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { application, employerProfile, job, resume, user } from "@/db/schema";
+import {
+  application,
+  employerProfile,
+  job,
+  notification,
+  resume,
+  user,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 import {
   DAILY_APPLICATION_LIMITS,
@@ -64,6 +71,7 @@ export async function applyToJob(input: {
       companyName: employerProfile.companyName,
       employerName: user.name,
       employerEmail: user.email,
+      employerId: user.id,
     })
     .from(job)
     .innerJoin(user, eq(user.id, job.employerId))
@@ -184,6 +192,27 @@ export async function applyToJob(input: {
       };
     }
 
+    await tx.insert(notification).values([
+      {
+        id: crypto.randomUUID(),
+        recipientUserId: session.user.id,
+        type: "APPLICATION_SUBMITTED",
+        title: "Application submitted",
+        message: `Your application for ${availableJob.title} was submitted successfully.`,
+        href: "/job-seeker/applications",
+        createdAt: applicationDate,
+      },
+      {
+        id: crypto.randomUUID(),
+        recipientUserId: availableJob.employerId,
+        type: "NEW_APPLICATION",
+        title: "New job application",
+        message: `${session.user.name} applied for ${availableJob.title}.`,
+        href: `/employer/jobs/${availableJob.id}`,
+        createdAt: applicationDate,
+      },
+    ]);
+
     const applicationsUsed = usedToday + (alreadyCountedToday ? 0 : 1);
 
     return {
@@ -201,7 +230,10 @@ export async function applyToJob(input: {
     revalidatePath("/job-seeker/jobs");
     revalidatePath(`/job-seeker/jobs/${parsed.data.jobId}`);
     revalidatePath("/job-seeker/applications");
+    revalidatePath("/job-seeker/dashboard");
     revalidatePath(`/employer/jobs/${parsed.data.jobId}`);
+    revalidatePath("/employer/dashboard");
+    revalidatePath("/notifications");
 
     try {
       const applicationUrl = process.env.BETTER_AUTH_URL;

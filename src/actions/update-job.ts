@@ -13,6 +13,7 @@ import {
   getVisibleJobDescriptionLength,
   sanitizeJobDescription,
 } from "@/lib/server/job-description";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 import { type JobInput, jobInputSchema } from "@/lib/validations/job";
 
 export async function updateJob(jobId: string, input: JobInput) {
@@ -23,6 +24,13 @@ export async function updateJob(jobId: string, input: JobInput) {
   if (!session || session.user.role !== "EMPLOYER") {
     throw new Error("Only signed-in employers can edit jobs.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "update-job",
+    limit: 30,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const validation = jobInputSchema.safeParse(input);
 

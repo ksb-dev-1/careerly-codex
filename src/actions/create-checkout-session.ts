@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { subscription, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 import {
   getApplicationUrl,
   getStripe,
@@ -36,6 +37,13 @@ export async function createCheckoutSession(input: {
       message: "Sign in as a job seeker to upgrade to Premium.",
     };
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "create-checkout-session",
+    limit: 10,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const parsed = checkoutSchema.safeParse(input);
 

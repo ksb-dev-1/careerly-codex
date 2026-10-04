@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { db } from "@/db";
 import { employerProfile } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 
 export type EmployerProfileInput = {
   companyName?: string;
@@ -30,6 +31,13 @@ export async function upsertEmployerProfile(input: EmployerProfileInput) {
   if (session.user.role !== "EMPLOYER") {
     throw new Error("Only employers can update this profile.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "update-employer-profile",
+    limit: 30,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   await db
     .insert(employerProfile)

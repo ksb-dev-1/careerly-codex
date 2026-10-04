@@ -13,6 +13,7 @@ import {
   getVisibleJobDescriptionLength,
   sanitizeJobDescription,
 } from "@/lib/server/job-description";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 import { type JobInput, jobInputSchema } from "@/lib/validations/job";
 
 export async function createJob(input: JobInput) {
@@ -27,6 +28,13 @@ export async function createJob(input: JobInput) {
   if (session.user.role !== "EMPLOYER") {
     throw new Error("Only employers can create jobs.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "create-job",
+    limit: 10,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const validation = jobInputSchema.safeParse(input);
 

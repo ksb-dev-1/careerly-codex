@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { job } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { assertMutationRateLimit } from "@/lib/server/rate-limit";
 
 export async function deleteDraftJob(jobId: string) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -15,6 +16,13 @@ export async function deleteDraftJob(jobId: string) {
   if (!session || session.user.role !== "EMPLOYER") {
     throw new Error("Only signed-in employers can delete jobs.");
   }
+
+  await assertMutationRateLimit({
+    userId: session.user.id,
+    action: "delete-draft-job",
+    limit: 10,
+    windowMs: 60 * 60 * 1_000,
+  });
 
   const [deleted] = await db
     .delete(job)
