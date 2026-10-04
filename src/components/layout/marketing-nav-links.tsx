@@ -68,6 +68,15 @@ export function EmployerNavLinks() {
   return (
     <>
       <Link
+        aria-label="Dashboard"
+        className={linkClassName}
+        href="/employer/dashboard"
+      >
+        <LayoutDashboard aria-hidden="true" className="size-4" />
+        <span className="hidden lg:inline">Dashboard</span>
+      </Link>
+
+      <Link
         aria-label="Your jobs"
         className={linkClassName}
         href="/employer/jobs"

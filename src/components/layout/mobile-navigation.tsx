@@ -79,6 +79,11 @@ function getNavigationItems(
 
   if (role === "EMPLOYER") {
     return [
+      {
+        href: "/employer/dashboard",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+      },
       { href: "/employer/jobs", label: "Your jobs", icon: BriefcaseBusiness },
       { href: "/employer/jobs/create", label: "Create job", icon: FilePlus2 },
       { href: profileHref, label: "Edit profile", icon: CircleUserRound },
